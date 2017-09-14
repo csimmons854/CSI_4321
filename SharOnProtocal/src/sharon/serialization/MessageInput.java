@@ -54,4 +54,22 @@ public class MessageInput {
         return data.readInt();
     }
 
+    public byte getByte() throws IOException
+    {
+        return data.readByte();
+    }
+
+    public byte [] getByteArray(int count) throws IOException {
+        byte [] buffer = new byte[count];
+        data.read(buffer,0,count);
+        return buffer;
+    }
+
+    public short getShort() throws IOException
+    {
+        return data.readShort();
+    }
+
+
+
 }

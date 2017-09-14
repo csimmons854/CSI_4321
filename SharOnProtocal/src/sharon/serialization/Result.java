@@ -224,6 +224,10 @@ public class Result {
         return fileName;
     }
 
+    /**
+     * @param fileName String
+     * @throws BadAttributeValueException if invalid file name
+     */
     public void setFileName(java.lang.String fileName)
             throws BadAttributeValueException
     {
@@ -234,10 +238,19 @@ public class Result {
 
         if (!fileName.matches("^[a-zA-Z0-9._-]+$"))
         {
-            throw new BadAttributeValueException("File Name uses invalid characters", fileName);
+            throw new BadAttributeValueException(
+                    "File Name uses invalid characters", fileName);
         }
 
         this.fileName = fileName;
+    }
+
+    /**
+     * @return length of the result obj in bytes
+     */
+    public int length()
+    {
+        return (8 + this.fileName.length());
     }
 
     /**

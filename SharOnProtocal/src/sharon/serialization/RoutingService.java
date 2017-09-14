@@ -39,11 +39,11 @@ public enum RoutingService {
 	public static RoutingService getRoutingService(int code)
             throws BadAttributeValueException
     {
-		if(code == 0)
+		if(code == 1)
         {
             return DEPTHFIRSTSEARCH;
         }
-        else if(code == 1)
+        else if(code == 0)
         {
             return BREADTHFIRSTBROADCAST;
         }

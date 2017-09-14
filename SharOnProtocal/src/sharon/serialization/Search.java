@@ -1,6 +1,7 @@
 package sharon.serialization;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class Search extends Message {
     private String searchString;
@@ -44,12 +45,19 @@ public class Search extends Message {
 
         if (!searchString.matches("^[a-zA-Z0-9._-]*$"))
         {
-            throw new BadAttributeValueException("Search uses invalid characters", searchString);
+            throw new BadAttributeValueException(
+                    "Search uses invalid characters", searchString);
         }
 
         if (searchString == null)
         {
             throw new BadAttributeValueException("Search is Null",searchString);
+        }
+
+        if(searchString.length() > 65535)
+        {
+            throw new BadAttributeValueException("String is to long",
+                    searchString);
         }
 
 
@@ -78,7 +86,8 @@ public class Search extends Message {
     {
         if (!searchString.matches("^[a-zA-Z0-9._-]+$"))
         {
-            throw new BadAttributeValueException("Search uses invalid characters", searchString);
+            throw new BadAttributeValueException(
+                    "Search uses invalid characters", searchString);
         }
 
         if(searchString == null)
@@ -86,6 +95,58 @@ public class Search extends Message {
             throw new BadAttributeValueException("Search is null",searchString);
         }
 
+        if(searchString.length() > 65535)
+        {
+            throw new BadAttributeValueException("String is to long",
+                    searchString);
+        }
+
         this.searchString = searchString;
     }
+
+    /**
+     * Test for equivalency of 2 Search objects
+     * @param o object to be compared
+     * @return boolean
+     */
+    @Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Search)) return false;
+		if (!super.equals(o)) return false;
+
+		Search search = (Search) o;
+
+		return searchString != null ? searchString.equals(search.searchString)
+                : search.searchString == null;
+	}
+
+    /**
+     * @return hash code of the Search object
+     */
+    @Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result +
+                (searchString != null ? searchString.hashCode() : 0);
+		return result;
+	}
+
+    /**
+     * @return String representation of the Search object
+     */
+    @Override
+    public String toString() {
+        return "Search{" +
+        "id=" + Arrays.toString(this.getID()) +
+                ", ttl=" + this.getTtl() +
+                ", routingService=" + this.getRoutingService() +
+                ", sourceSharOnAddress=" +
+                Arrays.toString(this.getSourceAddress()) +
+                ", destinationSharOnAddress=" +
+                Arrays.toString(this.getDestinationAddress()) +
+                ", searchString='" + searchString + '\'' +
+                '}';
+    }
 }
+

@@ -6,11 +6,22 @@
  *
  ************************************************/
 import org.junit.Test;
-import sharon.serialization.BadAttributeValueException;
-import sharon.serialization.Response;
-import sharon.serialization.RoutingService;
+import sharon.serialization.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
+import static sharon.serialization.Message.decode;
 
 /**
  * Created by Chris on 9/11/2017.
@@ -28,17 +39,21 @@ public class ResponseTest {
         RoutingService routingServiceTest = RoutingService.BREADTHFIRSTBROADCAST;
         byte [] srcTest = "00000".getBytes();
         byte [] destTest = "00000".getBytes();
-        java.net.InetSocketAddress testResponseHost = null;
+        int port = 256;
+        byte[] iNetAddress = {15,15,15,15};
+        java.net.InetSocketAddress responseHost =
+                new InetSocketAddress(
+                        InetAddress.getByAddress(iNetAddress),port);
 
         Response responseTest = new Response("000000000000000".getBytes(), 100,
                 RoutingService.BREADTHFIRSTBROADCAST, "00000".getBytes(),
-                "00000".getBytes(),null);
+                "00000".getBytes(),responseHost);
         assertEquals(new String(idTest),new String (responseTest.getID()));
         assertEquals(ttlTest,responseTest.getTtl());
         assertEquals(routingServiceTest,responseTest.getRoutingService());
         assertEquals(new String(srcTest),new String (responseTest.getSourceAddress()));
         assertEquals(new String(destTest),new String (responseTest.getDestinationAddress()));
-        assertEquals(testResponseHost,responseTest.getResponseHost());
+        assertEquals(responseHost,responseTest.getResponseHost());
     }
 
     /*
@@ -197,5 +212,88 @@ public class ResponseTest {
         assertEquals(srcTest,responseTest.getSourceAddress());
         assertEquals(destTest,responseTest.getDestinationAddress());
         assertEquals(testResponseHost,responseTest.getResponseHost());
+    }
+
+    @Test
+    public void decodeTest() throws BadAttributeValueException, IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+        byte[] id = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        int ttl = 100;
+        byte[] sourceAddress = {0,0,0,0,0};
+        byte[] destinationAddress = {0,0,0,0,0};
+        byte matches = 2;
+        int port = 256;
+        byte[] iNetAddress = {15,15,15,15};
+        java.net.InetSocketAddress responseHost =
+                new InetSocketAddress(
+                InetAddress.getByAddress(iNetAddress),port);
+
+        MessageOutput msgOut = new MessageOutput();
+        MessageOutput msgOut1 = new MessageOutput();
+        ;
+        Result rslt = new Result(2,2,"test");
+        Result rslt1 = new Result(1,2,"test");
+
+        List<Result> rsltList = new ArrayList<Result>();
+        rsltList.add(rslt);
+        rsltList.add(rslt1);
+
+        rsltList.get(0).encode(msgOut);
+        rsltList.get(1).encode(msgOut1);
+
+        buffer.put((byte)1);
+        buffer.put(id);
+        buffer.put((byte)ttl);
+        buffer.put((byte)0);
+        buffer.put(sourceAddress);
+        buffer.put(destinationAddress);
+        buffer.putShort((short) 15);
+        buffer.put(matches);
+        buffer.putShort((short)port);
+        buffer.put(iNetAddress);
+        buffer.put(((ByteArrayOutputStream)msgOut.getMsgOut()).toByteArray());
+        buffer.put(((ByteArrayOutputStream)msgOut1.getMsgOut()).toByteArray());
+        ByteArrayInputStream newIn2 = new ByteArrayInputStream(buffer.array());
+        MessageInput newMsg2 = new MessageInput(newIn2);
+
+        Response response = (Response) decode(newMsg2);
+        Response response1 = new Response(id,ttl,
+                RoutingService.BREADTHFIRSTBROADCAST,
+                sourceAddress,destinationAddress,responseHost);
+        response1.addResult(rslt);
+        response1.addResult(rslt1);
+        assertEquals(response1,response);
+    }
+
+    @Test
+    public void encodeTest() throws BadAttributeValueException, IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        MessageOutput msgOut = new MessageOutput();
+
+        byte[] id = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        int ttl = 100;
+        byte[] sourceAddress = {0,0,0,0,0};
+        byte[] destinationAddress = {0,0,0,0,0};
+        int port = 256;
+        byte[] iNetAddress = {15,15,15,15};
+        java.net.InetSocketAddress responseHost =
+                new InetSocketAddress(
+                        InetAddress.getByAddress(iNetAddress),port);
+
+
+        Result rslt = new Result(69,233,"test");
+        Result rslt1 = new Result(214,233,"test");
+
+
+        Response response1 = new Response(id,ttl,
+                RoutingService.BREADTHFIRSTBROADCAST,
+                sourceAddress,destinationAddress,responseHost);
+        response1.addResult(rslt);
+        response1.addResult(rslt1);
+
+        response1.encode(msgOut);
+        //System.err.println(Arrays.toString(((ByteArrayOutputStream) msgOut.getMsgOut()).toByteArray()));
+
     }
 }

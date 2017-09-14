@@ -1,6 +1,8 @@
 package sharon.serialization;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 public class Message {
@@ -119,10 +121,56 @@ public class Message {
 	public void encode(MessageOutput out)
             throws IOException
     {
-          if (out == null)
-          {
-              throw new IOException();
-          }
+
+        if (out == null)
+        {
+            throw new IOException();
+        }
+
+        if(this.getMessageType() == 1) //encode Search Message
+        {
+            out.writeByte(1);
+            out.writeByteArray(this.getID());
+            out.writeByte(this.ttl);
+            out.writeByte(this.getRoutingService().getServiceCode());
+            out.writeByteArray(this.sourceSharOnAddress);
+            out.writeByteArray(this.destinationSharOnAddress);
+            out.writeIntTo2Bytes(((Search)this).getSearchString().length() + 1);
+            out.writeString(((Search)this).getSearchString());
+        }
+        else if(this.getMessageType() == 2) //encode Response Message
+        {
+            out.writeByte(1);
+            out.writeByteArray(this.getID());
+            out.writeByte(this.ttl);
+            out.writeByte(this.getRoutingService().getServiceCode());
+            out.writeByteArray(this.sourceSharOnAddress);
+            out.writeByteArray(this.destinationSharOnAddress);
+
+            //calculate the length of the ResultList
+            int resultListLength = 0;
+            for(int i = 0; i < ((Response)this).getResultList().size(); i++)
+            {
+                resultListLength +=
+                        ((Response)this).getResultList().get(i).length() + 1;
+            }
+
+            out.writeIntTo2Bytes(7 + resultListLength);
+            out.writeByte(((Response)this).getResultList().size());
+            out.writeIntTo2Bytes(((Response)this).getResponseHost().getPort());
+            out.writeByteArray(
+                ((Response)this).getResponseHost().getAddress().getAddress());
+            //encode each individual result of ResultList
+            for(int i = 0; i < ((Response)this).getResultList().size(); i++)
+            {
+                ((Response)this).getResultList().get(i).encode(out);
+            }
+
+        }
+        else
+        {
+            throw new IOException();
+        }
     }
 	
 	/**
@@ -138,11 +186,96 @@ public class Message {
             throws IOException,
                    BadAttributeValueException
 	{
+	    //initialize variables to be used to actually decode a messageInput
+	    int type;
+	    byte [] id;
+	    int ttl;
+	    int routingCode;
+        byte [] source;
+        byte [] destination;
+        String searchString;
+        int payload = 0x00000000;
+        int matches = 1;
+        int port = 1;
+        byte [] address;
+        InetSocketAddress socketAddress;
+        Message msg = null;
+
 	    if(in == null)
         {
             throw new IOException();
         }
-		return null;
+
+        //get type of message
+        type = in.getByte();
+
+        if(type  == 0) //decode Search Message
+        {
+            id = in.getByteArray(15);
+
+            ttl = in.getByte();
+
+            //convert to unsigned long
+            if(ttl < 0)
+            {
+                ttl = ttl & 0x000000FF;
+            }
+
+            routingCode =in.getByte();
+            source = in.getByteArray(5);
+            destination = in.getByteArray(5);
+
+            //create a int from two bytes
+            payload = payload | (in.getByte() << 8) | in.getByte();
+            searchString = in.getString();
+
+
+            if(searchString.length() != payload - 1)
+            {
+                throw new IOException();
+            }
+
+            msg = new Search(id,ttl,
+                    RoutingService.getRoutingService(routingCode),
+                    source,destination,searchString);
+
+        }
+        else if(type == 1) //response object
+        {
+            id = in.getByteArray(15);
+
+            ttl = in.getByte();
+            if(ttl < 0)
+            {
+                ttl = ttl & 0x000000FF;
+            }
+            routingCode = in.getByte();
+            source = in.getByteArray(5);
+            destination = in.getByteArray(5);
+            payload = payload | (in.getByte() << 8) | in.getByte();
+            matches = in.getByte();
+            port = in.getShort();
+            address = in.getByteArray(4);
+            //System.err.println(payload + " " + Arrays.toString(address));
+            socketAddress = new InetSocketAddress(
+                    InetAddress.getByAddress(address),port);
+            msg = new Response(id,ttl,
+                    RoutingService.getRoutingService(routingCode),source,
+                    destination,socketAddress);
+            for(int i = 0; i < matches; i++)
+            {
+                ((Response)msg).addResult(new Result(
+                        in.getInt() & 0x00000000FFFFFFFFL,
+                        in.getInt() & 0x00000000FFFFFFFFL,
+                        in.getString()));
+            }
+        }
+        else
+        {
+            throw new IOException();
+        }
+
+		return msg;
     }
 	
 	/**
@@ -337,6 +470,12 @@ public class Message {
         this.destinationSharOnAddress = destinationAddress;
     }
 
+    /**
+     * Test for equivalency of two Message objects
+     *
+     * @param o object to be compared
+     * @return a boolean based on the equivalency
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -360,5 +499,16 @@ public class Message {
         result = 31 * result + Arrays.hashCode(sourceSharOnAddress);
         result = 31 * result + Arrays.hashCode(destinationSharOnAddress);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + Arrays.toString(id) +
+                ", ttl=" + ttl +
+                ", routingService=" + routingService +
+                ", sourceSharOnAddress=" + Arrays.toString(sourceSharOnAddress) +
+                ", destinationSharOnAddress=" + Arrays.toString(destinationSharOnAddress) +
+                '}';
     }
 }

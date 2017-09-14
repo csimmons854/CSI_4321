@@ -1,6 +1,8 @@
 package sharon.serialization;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Response extends Message {
 
@@ -10,7 +12,7 @@ public class Response extends Message {
 	private byte[] sourceSharOnAddress;
 	private byte[] destinationSharOnAddress;
 	private java.net.InetSocketAddress responseHost;
-	private java.util.List<Result> resultList;
+	private java.util.List<Result> resultList = new ArrayList<Result>();
 	
 	/**
 	 * Constructs new response with deserialization
@@ -48,6 +50,11 @@ public class Response extends Message {
      throws BadAttributeValueException
 	{
 		super(id,ttl,routingService,sourceSharOnAddress,destinationSharOnAddress);
+		if(responseHost == null)
+        {
+            throw new BadAttributeValueException("Response host is null",
+                    "null");
+        }
 		this.responseHost = responseHost;
     }
 	
@@ -102,5 +109,60 @@ public class Response extends Message {
             throw new BadAttributeValueException("Result is null",null);
         }
 		resultList.add(result);
+    }
+
+    /**
+     * @param o object to be compared
+     * @return boolean based on the equivalency of the two objects
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Response)) return false;
+        if (!super.equals(o)) return false;
+
+        Response response = (Response) o;
+
+        if (ttl != response.ttl) return false;
+        if (!Arrays.equals(id, response.id)) return false;
+        if (routingService != response.routingService) return false;
+        if (!Arrays.equals(sourceSharOnAddress, response.sourceSharOnAddress))
+            return false;
+        if (!Arrays.equals(destinationSharOnAddress, response.destinationSharOnAddress))
+            return false;
+        if (!responseHost.equals(response.responseHost)) return false;
+        return resultList.equals(response.resultList);
+    }
+
+    /**
+     * @return hashCode of Response
+     */
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + Arrays.hashCode(id);
+        result = 31 * result + ttl;
+        result = 31 * result + routingService.hashCode();
+        result = 31 * result + Arrays.hashCode(sourceSharOnAddress);
+        result = 31 * result + Arrays.hashCode(destinationSharOnAddress);
+        result = 31 * result + responseHost.hashCode();
+        result = 31 * result + resultList.hashCode();
+        return result;
+    }
+
+    /**
+     * @return String Representation of result
+     */
+    @Override
+    public String toString() {
+        return "Response{" +
+                "id=" + Arrays.toString(id) +
+                ", ttl=" + ttl +
+                ", routingService=" + routingService +
+                ", sourceSharOnAddress=" + Arrays.toString(sourceSharOnAddress) +
+                ", destinationSharOnAddress=" + Arrays.toString(destinationSharOnAddress) +
+                ", responseHost=" + responseHost +
+                ", resultList=" + resultList +
+                '}';
     }
 }
