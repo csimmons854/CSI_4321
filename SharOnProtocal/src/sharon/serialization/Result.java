@@ -8,9 +8,7 @@
 
 package sharon.serialization;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * Represents a SharOn search result and provides serialization/deserialization
@@ -31,6 +29,11 @@ public class Result {
     public Result(MessageInput in)
             throws BadAttributeValueException, IOException {
 
+        if(in == null)
+        {
+            throw new IOException();
+        }
+
         this.fileID = in.getInt();
         if(this.fileID  < 0)
         {
@@ -43,10 +46,14 @@ public class Result {
             this.fileSize = this.fileSize & 0x00000000FFFFFFFFL;
         }
 
-        this.fileName = in.getString();
-        if (!this.fileName.matches("^[a-zA-Z0-9._-]+$"))
+        String temp = in.getString();
+        if (!temp.matches("^[a-zA-Z0-9._-]+$"))
         {
-            throw new BadAttributeValueException("File Name uses invalid characters", this.fileName);
+            throw new BadAttributeValueException("File Name uses invalid characters", temp);
+        }
+        else
+        {
+            this.fileName = temp;
         }
     }
 
@@ -83,6 +90,12 @@ public class Result {
                     "Invalid fileSize, fileSize < 0",  "" + fileSize);
         }
 
+        if (fileSize > 0xFFFFFFFFL)
+        {
+            throw new BadAttributeValueException(
+                    "Invalid fileSize, fileSize > 0xFFFFFFFFL",  "" + fileSize);
+        }
+
         if (fileName == null)
         {
             throw new BadAttributeValueException("File Name is null", "null");
@@ -109,12 +122,13 @@ public class Result {
     public void encode(MessageOutput out)
             throws  java.io.IOException
     {
-        ByteArrayOutputStream temp = new ByteArrayOutputStream();
-        temp.write(ByteBuffer.allocate(4).putInt((int)fileID).array());
-        temp.write(ByteBuffer.allocate(4).putInt((int)fileSize).array());
-        temp.write(fileName.getBytes());
-        temp.close();
-        out.setMsgOut(temp);
+        if (out == null)
+        {
+            throw new IOException();
+        }
+        out.writeInt((int)fileID);
+        out.writeInt((int)fileSize);
+        out.writeString(fileName);
     }
 
     /**
@@ -189,6 +203,13 @@ public class Result {
         {
             throw new BadAttributeValueException(
                     "Invalid fileSize, fileSize < 0",  "" + fileSize);
+        }
+
+
+        if (fileSize > 0xFFFFFFFFL)
+        {
+            throw new BadAttributeValueException(
+                    "Invalid fileSize, fileSize > 0xFFFFFFFFL",  "" + fileSize);
         }
         this.fileSize = fileSize;
     }

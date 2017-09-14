@@ -30,9 +30,9 @@ public class MessageInputTest {
         buff = temp.toByteArray();
         in = new ByteArrayInputStream(buff);
         MessageInput newMsg = new MessageInput(in);
-        assertEquals(newMsg.getMsgFileID(),1);
-        assertEquals(newMsg.getMsgFileSize(),2);
-        assertEquals(newMsg.getMsgFileName(),"file.txt");
+        assertEquals(newMsg.getInt(),1);
+        assertEquals(newMsg.getInt(),2);
+        assertEquals(newMsg.getString(),"file.txt");
     }
 
 }

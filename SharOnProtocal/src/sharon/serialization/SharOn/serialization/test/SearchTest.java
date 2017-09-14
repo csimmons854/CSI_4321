@@ -5,7 +5,6 @@
  * Class: CSI 4321 Data Communications
  *
  ************************************************/
-package sharon.serialization.test;
 
 import static org.junit.Assert.*;
 import java.io.IOException;
@@ -26,7 +25,7 @@ public class SearchTest {
         RoutingService routingService = RoutingService.BREADTHFIRSTBROADCAST;
         byte[] sourceAddress = {0,0,0,0,0};
         byte[] destinationAddress = {0,0,0,0,0};
-        java.lang.String searchString = "";
+        String searchString = "";
         
         Search srch = new Search(id, ttl, routingService, sourceAddress
         						   , destinationAddress, searchString);
@@ -267,7 +266,7 @@ public class SearchTest {
 	/**
 	 * Tests for a BadAttributeException when invalid chars are given
 	 */
-	@Test
+	@Test (expected = BadAttributeValueException.class)
 	public void searchStringInvalidTest() throws BadAttributeValueException {
 		String string = "{}()[]";
 		byte[] id = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -275,7 +274,7 @@ public class SearchTest {
         RoutingService routingService = RoutingService.BREADTHFIRSTBROADCAST;
         byte[] sourceAddress = {0,0,0,0,0};
         byte[] destinationAddress = {0,0,0,0,0};
-        java.lang.String searchString = "";
+        String searchString = "";
         
         Search srch = new Search(id, ttl, routingService, sourceAddress
         						   , destinationAddress, searchString);

@@ -16,10 +16,7 @@ import java.io.InputStream;
  * Serialization input for messages
  */
 public class MessageInput {
-    long msgFileID;
-    long msgFileSize;
-    String msgFileName;
-    DataInputStream data;
+    private DataInputStream data;
 
     /**
      *  Constructs that creates a new input source from an InputStream
@@ -57,34 +54,4 @@ public class MessageInput {
         return data.readInt();
     }
 
-    /**
-     * @return the msgFileName
-     */
-    public String getMsgFileName() {
-        return msgFileName;
-    }
-
-    /**
-     * @param msgFileName
-     */
-    public void setMsgFileName(String msgFileName) {
-        this.msgFileName = msgFileName;
-    }
-
-    public long getMsgFileSize() {
-        return msgFileSize;
-    }
-
-    public void setMsgFileSize(long msgFileSize) {
-        this.msgFileSize = msgFileSize;
-    }
-
-
-    public long getMsgFileID() {
-        return msgFileID;
-    }
-
-    public void setMsgFileID(long msgFileID) {
-        this.msgFileID = msgFileID;
-    }
 }

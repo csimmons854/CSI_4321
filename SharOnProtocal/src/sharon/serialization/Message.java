@@ -5,11 +5,11 @@ import java.util.Arrays;
 
 public class Message {
 
-	byte[] id;
-	int ttl;
-	RoutingService routingService;
-	byte[] sourceSharOnAddress;
-	byte[] destinationSharOnAddress;
+    private byte[] id;
+    private int ttl;
+    private RoutingService routingService;
+    private byte[] sourceSharOnAddress;
+    private byte[] destinationSharOnAddress;
 
 	
 	/**
@@ -33,8 +33,80 @@ public class Message {
 	 */
 	Message(byte[] id, int ttl, RoutingService routingService, 
 			byte[] sourceSharOnAddress, byte[] destinationSharOnAddress)
-	{
-		
+            throws BadAttributeValueException {
+
+        if (id == null)
+        {
+            throw new BadAttributeValueException("ID was null","null");
+        }
+
+        if (id.length < 15) {
+            throw new BadAttributeValueException("Too Short ID", id.toString());
+        }
+
+        if (id.length > 15) {
+            throw new BadAttributeValueException("Too Large ID", id.toString());
+        }
+
+
+        if (routingService == null) {
+            throw new BadAttributeValueException("RoutingService is null", "null");
+        }
+
+        if (!routingService.equals(RoutingService.BREADTHFIRSTBROADCAST) &&
+                !routingService.equals(RoutingService.DEPTHFIRSTSEARCH)) {
+            throw new BadAttributeValueException("invalid RoutingService",
+                    routingService.toString());
+        }
+
+        if (ttl > 255) {
+            throw new BadAttributeValueException("Too large ttl", "" + ttl);
+        }
+
+        if (ttl < 0) {
+            throw new BadAttributeValueException("Too small ttl", "" + ttl);
+        }
+
+        if (sourceSharOnAddress == null)
+        {
+            throw new BadAttributeValueException("Null sourceAddress",
+                    "null");
+        }
+
+        if (sourceSharOnAddress.length > 5)
+        {
+            throw new BadAttributeValueException("Too large sourceAddress",
+                    sourceSharOnAddress.toString());
+        }
+
+        if (sourceSharOnAddress.length < 5)
+        {
+            throw new BadAttributeValueException("Too small sourceAddress",
+                    sourceSharOnAddress.toString());
+        }
+
+        if (destinationSharOnAddress == null)
+        {
+            throw new BadAttributeValueException("Null destinationAddress", "null");
+        }
+
+        if (destinationSharOnAddress.length > 5)
+        {
+            throw new BadAttributeValueException("Too large destinationAddress",
+                    sourceSharOnAddress.toString());
+        }
+
+        if (destinationSharOnAddress.length < 5)
+        {
+            throw new BadAttributeValueException("Too small destinationAddress",
+                    destinationSharOnAddress.toString());
+        }
+
+        this.ttl = ttl;
+		this.id = id;
+		this.routingService = routingService;
+		this.destinationSharOnAddress = destinationSharOnAddress;
+		this.sourceSharOnAddress = sourceSharOnAddress;
 	}
 	
 	/**
@@ -45,9 +117,12 @@ public class Message {
 	 * @throws java.io.IOException if serialization fails
 	 */
 	public void encode(MessageOutput out)
-            throws java.io.IOException
+            throws IOException
     {
-	          
+          if (out == null)
+          {
+              throw new IOException();
+          }
     }
 	
 	/**
@@ -63,6 +138,10 @@ public class Message {
             throws IOException,
                    BadAttributeValueException
 	{
+	    if(in == null)
+        {
+            throw new IOException();
+        }
 		return null;
     }
 	
@@ -73,7 +152,17 @@ public class Message {
 	 */
 	public int getMessageType()
 	{
-		return 0;
+	    int type = 0;
+		if(this instanceof Search)
+        {
+            type = 1;
+        }
+
+        if(this instanceof Response)
+        {
+            type = 2;
+        }
+	    return type;
 	}
 	
 	/**
@@ -83,7 +172,8 @@ public class Message {
 	 */
 	public byte[] getID()
 	{
-		return null;
+
+	    return id;
 	}
 	
 	/**
@@ -96,7 +186,17 @@ public class Message {
 	public void setID(byte[] id)
 	           throws BadAttributeValueException
 	{
-		
+        if(id.length < 15)
+        {
+            throw new BadAttributeValueException("Too Short ID", id.toString());
+        }
+
+        if(id.length > 15)
+        {
+            throw new BadAttributeValueException("Too Large ID", id.toString());
+        }
+
+        this.id = id;
 	}
 	
 	/**
@@ -106,7 +206,7 @@ public class Message {
 	 */
 	public int getTtl()
 	{
-		return 0;
+		return ttl;
 	}
 	
 	/**
@@ -119,7 +219,17 @@ public class Message {
 	public void setTtl(int ttl)
             throws BadAttributeValueException
     {
-		
+        if(ttl > 255)
+        {
+            throw new BadAttributeValueException("Too large ttl", "" + ttl);
+        }
+
+        if(ttl < 0)
+        {
+            throw new BadAttributeValueException("Too small ttl", "" + ttl);
+        }
+
+        this.ttl = ttl;
     }
 	
 	/**
@@ -129,7 +239,7 @@ public class Message {
 	 */
 	public RoutingService getRoutingService()
 	{
-		return null;
+		return routingService;
 	}
 	
 	/**
@@ -142,7 +252,19 @@ public class Message {
 	public void setRoutingService(RoutingService routingService)
             throws BadAttributeValueException
     {
-		
+        if(routingService == null)
+        {
+            throw new BadAttributeValueException("RoutingService is null",null);
+        }
+
+        if(routingService != RoutingService.BREADTHFIRSTBROADCAST ||
+                routingService != RoutingService.DEPTHFIRSTSEARCH)
+        {
+            throw new BadAttributeValueException("invalid RoutingSerive",
+                    routingService.toString());
+        }
+
+        this.routingService = routingService;
     }
 	
 	/**
@@ -152,7 +274,7 @@ public class Message {
 	 */
 	public byte[] getSourceAddress()
 	{
-		return null;
+		return sourceSharOnAddress;
 	}
 	
 	/**
@@ -165,7 +287,19 @@ public class Message {
 	public void setSourceAddress(byte[] sourceAddress)
             throws BadAttributeValueException
     {
-		
+        if(sourceSharOnAddress.length > 5)
+        {
+            throw new BadAttributeValueException("Too large sourceAddress",
+                    sourceSharOnAddress.toString());
+        }
+
+        if(sourceSharOnAddress.length < 5)
+        {
+            throw new BadAttributeValueException("Too small sourceAddress",
+                    sourceSharOnAddress.toString());
+        }
+
+        this.sourceSharOnAddress = sourceAddress;
     }
 	
 	/**
@@ -175,7 +309,7 @@ public class Message {
 	 */
 	public byte[] getDestinationAddress()
 	{
-		return null;
+		return destinationSharOnAddress;
 	}
 	
 	/**
@@ -188,6 +322,43 @@ public class Message {
 	public void setDestinationAddress(byte[] destinationAddress)
             throws BadAttributeValueException
     {
-		
+        if(destinationSharOnAddress.length > 5)
+        {
+            throw new BadAttributeValueException("Too large destinationAddress",
+                    sourceSharOnAddress.toString());
+        }
+
+        if(destinationSharOnAddress.length < 5)
+        {
+            throw new BadAttributeValueException("Too small destinationAddress",
+                    destinationSharOnAddress.toString());
+        }
+
+        this.destinationSharOnAddress = destinationAddress;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Message message = (Message) o;
+
+        if (ttl != message.ttl) return false;
+        if (!Arrays.equals(id, message.id)) return false;
+        if (routingService != message.routingService) return false;
+        if (!Arrays.equals(sourceSharOnAddress, message.sourceSharOnAddress))
+            return false;
+        return Arrays.equals(destinationSharOnAddress, message.destinationSharOnAddress);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(id);
+        result = 31 * result + ttl;
+        result = 31 * result + (routingService != null ? routingService.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(sourceSharOnAddress);
+        result = 31 * result + Arrays.hashCode(destinationSharOnAddress);
+        return result;
     }
 }

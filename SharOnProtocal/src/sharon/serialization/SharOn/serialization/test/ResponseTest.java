@@ -7,7 +7,6 @@
  ************************************************/
 import org.junit.Test;
 import sharon.serialization.BadAttributeValueException;
-import sharon.serialization.MessageInput;
 import sharon.serialization.Response;
 import sharon.serialization.RoutingService;
 
@@ -34,12 +33,11 @@ public class ResponseTest {
         Response responseTest = new Response("000000000000000".getBytes(), 100,
                 RoutingService.BREADTHFIRSTBROADCAST, "00000".getBytes(),
                 "00000".getBytes(),null);
-
-        assertEquals(idTest,responseTest.getID());
+        assertEquals(new String(idTest),new String (responseTest.getID()));
         assertEquals(ttlTest,responseTest.getTtl());
         assertEquals(routingServiceTest,responseTest.getRoutingService());
-        assertEquals(srcTest,responseTest.getSourceAddress());
-        assertEquals(destTest,responseTest.getDestinationAddress());
+        assertEquals(new String(srcTest),new String (responseTest.getSourceAddress()));
+        assertEquals(new String(destTest),new String (responseTest.getDestinationAddress()));
         assertEquals(testResponseHost,responseTest.getResponseHost());
     }
 
@@ -82,9 +80,10 @@ public class ResponseTest {
     @Test (expected = BadAttributeValueException.class)
     public void ResponseToLargeIDTest() throws Exception
     {
-        Response responseTest = new Response("000000000000000".getBytes(), 1,
+        Response responseTest = new Response("0000000000000000".getBytes(), 1,
                 RoutingService.BREADTHFIRSTBROADCAST, "00000".getBytes(),
                 "00000".getBytes(),null);
+        System.err.println("000000000000000".getBytes().length);
     }
 
     /*

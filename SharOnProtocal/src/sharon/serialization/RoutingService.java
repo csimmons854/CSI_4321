@@ -15,7 +15,17 @@ public enum RoutingService {
 	 */
 	public int getServiceCode()
 	{
-		return 0;
+	    int code = -1;
+		if(this == BREADTHFIRSTBROADCAST)
+		{
+		    code = 0;
+		}
+		if(this == DEPTHFIRSTSEARCH)
+		{
+			code = 1;
+		}
+
+		return code;
 	}
 	
 	/**
@@ -29,7 +39,18 @@ public enum RoutingService {
 	public static RoutingService getRoutingService(int code)
             throws BadAttributeValueException
     {
-		return null;
-		
+		if(code == 0)
+        {
+            return DEPTHFIRSTSEARCH;
+        }
+        else if(code == 1)
+        {
+            return BREADTHFIRSTBROADCAST;
+        }
+        else
+        {
+            throw new BadAttributeValueException("Invalid Code",("" + code));
+        }
+
     }
 }

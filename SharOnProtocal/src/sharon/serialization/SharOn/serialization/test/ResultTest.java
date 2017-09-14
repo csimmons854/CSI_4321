@@ -99,11 +99,12 @@ public class ResultTest
         ByteArrayOutputStream temp = new ByteArrayOutputStream();
         temp.write(ByteBuffer.allocate(4).putInt((int)10).array());
         temp.write(ByteBuffer.allocate(4).putInt((int)20).array());
-        temp.write("Test.txt".getBytes());
+        temp.write("Test.txt\n".getBytes());
         out = new MessageOutput(temp);
         MessageOutput test = new MessageOutput();
         Result rslt1 = new Result(10,20,"Test.txt");
         rslt1.encode(test);
+        //System.err.println(test.getMsgOut().toString());
         assertEquals(out.getMsgOut().toString(),test.getMsgOut().toString());
 	}
 

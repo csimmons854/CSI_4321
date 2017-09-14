@@ -13,7 +13,7 @@ package sharon.serialization;
  */
 public class BadAttributeValueException extends java.lang.Exception
 {
-    String attributeName;
+    private String attributeName;
     /**
      * Constructs a BadAttributeException
      *

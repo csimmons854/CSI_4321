@@ -1,16 +1,16 @@
 package sharon.serialization;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class Response extends Message {
 
-	byte[] id;
-    int ttl;
-    RoutingService routingService;
-    byte[] sourceSharOnAddress;
-    byte[] destinationSharOnAddress;
-    java.net.InetSocketAddress responseHost;
+	private byte[] id;
+	private int ttl;
+	private RoutingService routingService;
+	private byte[] sourceSharOnAddress;
+	private byte[] destinationSharOnAddress;
+	private java.net.InetSocketAddress responseHost;
+	private java.util.List<Result> resultList;
 	
 	/**
 	 * Constructs new response with deserialization
@@ -47,7 +47,8 @@ public class Response extends Message {
             java.net.InetSocketAddress responseHost)
      throws BadAttributeValueException
 	{
-		super(null);
+		super(id,ttl,routingService,sourceSharOnAddress,destinationSharOnAddress);
+		this.responseHost = responseHost;
     }
 	
 	
@@ -58,7 +59,7 @@ public class Response extends Message {
 	 */
 	public java.net.InetSocketAddress getResponseHost()
 	{
-		return null;
+		return responseHost;
 	}
 	
 	
@@ -72,7 +73,7 @@ public class Response extends Message {
 	public void setResponseHost(java.net.InetSocketAddress responseHost)
             throws BadAttributeValueException
     {
-		
+		this.responseHost = responseHost;
     }
 	
 	/**
@@ -82,7 +83,7 @@ public class Response extends Message {
 	 */
 	public java.util.List<Result> getResultList()
 	{
-		return null;
+		return resultList;
 	}
 	
 	/**
@@ -96,6 +97,10 @@ public class Response extends Message {
 	public void addResult(Result result)
             throws BadAttributeValueException
     {
-		
+        if(result == null)
+        {
+            throw new BadAttributeValueException("Result is null",null);
+        }
+		resultList.add(result);
     }
 }
