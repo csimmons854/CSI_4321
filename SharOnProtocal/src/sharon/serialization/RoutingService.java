@@ -49,7 +49,7 @@ public enum RoutingService {
         }
         else
         {
-            throw new BadAttributeValueException("Invalid Code",("" + code));
+            throw new BadAttributeValueException("Invalid Code " + code,("" + code));
         }
 
     }

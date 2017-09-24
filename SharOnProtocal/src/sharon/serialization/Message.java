@@ -140,7 +140,7 @@ public class Message {
         }
         else if(this.getMessageType() == 2) //encode Response Message
         {
-            out.writeByte(1);
+            out.writeByte(2);
             out.writeByteArray(this.getID());
             out.writeByte(this.ttl);
             out.writeByte(this.getRoutingService().getServiceCode());
@@ -194,22 +194,22 @@ public class Message {
         byte [] source;
         byte [] destination;
         String searchString;
-        int payload = 0x00000000;
+        int payload = 0x0000FFFF;
         int matches = 1;
         int port = 1;
         byte [] address;
         InetSocketAddress socketAddress;
-        Message msg = null;
+        Message msg;
 
 	    if(in == null)
         {
-            throw new IOException();
+            throw new IOException("Null Value");
         }
 
         //get type of message
         type = in.getByte();
 
-        if(type  == 0) //decode Search Message
+        if(type == 1) //decode Search Message
         {
             id = in.getByteArray(15);
 
@@ -226,13 +226,13 @@ public class Message {
             destination = in.getByteArray(5);
 
             //create a int from two bytes
-            payload = payload | (in.getByte() << 8) | in.getByte();
+            payload = payload & in.getShort();
             searchString = in.getString();
 
 
             if(searchString.length() != payload - 1)
             {
-                throw new IOException();
+                throw new IOException("Invalid Payload " + searchString + " " + payload);
             }
 
             msg = new Search(id,ttl,
@@ -240,8 +240,9 @@ public class Message {
                     source,destination,searchString);
 
         }
-        else if(type == 1) //response object
+        else if(type == 2) //response object
         {
+
             id = in.getByteArray(15);
 
             ttl = in.getByte();
@@ -252,13 +253,19 @@ public class Message {
             routingCode = in.getByte();
             source = in.getByteArray(5);
             destination = in.getByteArray(5);
-            payload = payload | (in.getByte() << 8) | in.getByte();
+            payload = payload & in.getShort();
             matches = in.getByte();
             port = in.getShort();
             address = in.getByteArray(4);
             //System.err.println(payload + " " + Arrays.toString(address));
             socketAddress = new InetSocketAddress(
                     InetAddress.getByAddress(address),port);
+            if(routingCode > 1)
+            {
+                throw new IOException(type + " " + Arrays.toString(id) +
+                        " " + ttl + " " + routingCode + " " + Arrays.toString(source));
+            }
+
             msg = new Response(id,ttl,
                     RoutingService.getRoutingService(routingCode),source,
                     destination,socketAddress);
@@ -272,7 +279,8 @@ public class Message {
         }
         else
         {
-            throw new IOException();
+            throw new BadAttributeValueException("Invalid Message Type " + type,
+                    "" + type);
         }
 
 		return msg;
@@ -319,6 +327,11 @@ public class Message {
 	public void setID(byte[] id)
 	           throws BadAttributeValueException
 	{
+	    if(id == null)
+        {
+            throw new BadAttributeValueException("ID is Null", "null");
+        }
+
         if(id.length < 15)
         {
             throw new BadAttributeValueException("Too Short ID", id.toString());
@@ -387,13 +400,14 @@ public class Message {
     {
         if(routingService == null)
         {
-            throw new BadAttributeValueException("RoutingService is null",null);
+            throw new BadAttributeValueException("RoutingService is null","null");
         }
 
-        if(routingService != RoutingService.BREADTHFIRSTBROADCAST ||
+        if(routingService != RoutingService.BREADTHFIRSTBROADCAST &&
                 routingService != RoutingService.DEPTHFIRSTSEARCH)
         {
-            throw new BadAttributeValueException("invalid RoutingSerive",
+            throw new BadAttributeValueException("invalid RoutingService "
+                    + routingService.toString(),
                     routingService.toString());
         }
 
@@ -420,16 +434,17 @@ public class Message {
 	public void setSourceAddress(byte[] sourceAddress)
             throws BadAttributeValueException
     {
-        if(sourceSharOnAddress.length > 5)
+        System.err.println(sourceAddress.length);
+        if(sourceAddress.length > 5)
         {
             throw new BadAttributeValueException("Too large sourceAddress",
-                    sourceSharOnAddress.toString());
+                    sourceAddress.toString());
         }
 
-        if(sourceSharOnAddress.length < 5)
+        if(sourceAddress.length < 5)
         {
             throw new BadAttributeValueException("Too small sourceAddress",
-                    sourceSharOnAddress.toString());
+                    sourceAddress.toString());
         }
 
         this.sourceSharOnAddress = sourceAddress;
@@ -455,16 +470,16 @@ public class Message {
 	public void setDestinationAddress(byte[] destinationAddress)
             throws BadAttributeValueException
     {
-        if(destinationSharOnAddress.length > 5)
+        if(destinationAddress.length > 5)
         {
             throw new BadAttributeValueException("Too large destinationAddress",
                     sourceSharOnAddress.toString());
         }
 
-        if(destinationSharOnAddress.length < 5)
+        if(destinationAddress.length < 5)
         {
             throw new BadAttributeValueException("Too small destinationAddress",
-                    destinationSharOnAddress.toString());
+                    destinationAddress.toString());
         }
 
         this.destinationSharOnAddress = destinationAddress;

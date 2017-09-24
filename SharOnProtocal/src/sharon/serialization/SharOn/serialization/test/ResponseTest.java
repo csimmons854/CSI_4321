@@ -242,7 +242,7 @@ public class ResponseTest {
         rsltList.get(0).encode(msgOut);
         rsltList.get(1).encode(msgOut1);
 
-        buffer.put((byte)1);
+        buffer.put((byte)2);
         buffer.put(id);
         buffer.put((byte)ttl);
         buffer.put((byte)0);
@@ -295,5 +295,20 @@ public class ResponseTest {
         response1.encode(msgOut);
         //System.err.println(Arrays.toString(((ByteArrayOutputStream) msgOut.getMsgOut()).toByteArray()));
 
+    }
+
+    @Test (expected = BadAttributeValueException.class)
+    public void setterTest() throws BadAttributeValueException, IOException
+    {
+        int port = 256;
+        byte[] iNetAddress = {15,15,15,15};
+        byte[] sourceTest = {15,15,15,15};
+        java.net.InetSocketAddress responseHost =
+                new InetSocketAddress(InetAddress.getByAddress(iNetAddress),port);
+
+        Response responseTest = new Response("000000000000000".getBytes(), 100,
+                RoutingService.BREADTHFIRSTBROADCAST, "00000".getBytes(),
+                "00000".getBytes(),responseHost);
+        responseTest.setSourceAddress(sourceTest);
     }
 }

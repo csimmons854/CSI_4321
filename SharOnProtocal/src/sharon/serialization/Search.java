@@ -43,15 +43,15 @@ public class Search extends Message {
 	{
 		super(id,ttl,routingService,sourceAddress,destinationAddress);
 
+        if (searchString == null)
+        {
+            throw new BadAttributeValueException("Search is Null","null");
+        }
+
         if (!searchString.matches("^[a-zA-Z0-9._-]*$"))
         {
             throw new BadAttributeValueException(
                     "Search uses invalid characters", searchString);
-        }
-
-        if (searchString == null)
-        {
-            throw new BadAttributeValueException("Search is Null",searchString);
         }
 
         if(searchString.length() > 65535)
@@ -84,15 +84,15 @@ public class Search extends Message {
 	public void setSearchString(String searchString)
             throws BadAttributeValueException
     {
+		if(searchString == null)
+		{
+			throw new BadAttributeValueException("Search is null","null");
+		}
+
         if (!searchString.matches("^[a-zA-Z0-9._-]+$"))
         {
             throw new BadAttributeValueException(
                     "Search uses invalid characters", searchString);
-        }
-
-        if(searchString == null)
-        {
-            throw new BadAttributeValueException("Search is null",searchString);
         }
 
         if(searchString.length() > 65535)

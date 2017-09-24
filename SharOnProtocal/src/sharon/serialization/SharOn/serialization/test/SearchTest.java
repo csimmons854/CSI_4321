@@ -318,7 +318,7 @@ public class SearchTest {
         byte[] sourceAddress = {0,0,0,0,0};
         byte[] destinationAddress = {0,0,0,0,0};
 
-        buffer.put((byte)0);
+        buffer.put((byte)1);
         buffer.put(id);
         buffer.put((byte)ttl);
         buffer.put((byte)0);
@@ -334,5 +334,18 @@ public class SearchTest {
 		assertEquals(new Search(id,ttl,RoutingService.BREADTHFIRSTBROADCAST,
                 sourceAddress,destinationAddress,"test"),srch);
 	}
+
+	@Test (expected = BadAttributeValueException.class)
+	public void setNullSearch() throws BadAttributeValueException
+    {
+        byte[] id = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        int ttl = 100;
+        byte[] sourceAddress = {0,0,0,0,0};
+        byte[] destinationAddress = {0,0,0,0,0};
+        Search test = new Search(id,ttl,RoutingService.BREADTHFIRSTBROADCAST,
+                sourceAddress,destinationAddress,"test");
+        test.setSearchString(null);
+    }
+
 
 }

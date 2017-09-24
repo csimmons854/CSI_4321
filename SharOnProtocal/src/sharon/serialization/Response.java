@@ -80,6 +80,10 @@ public class Response extends Message {
 	public void setResponseHost(java.net.InetSocketAddress responseHost)
             throws BadAttributeValueException
     {
+    	if(responseHost == null)
+		{
+			throw new BadAttributeValueException("Response Host is Null","null");
+		}
 		this.responseHost = responseHost;
     }
 	
@@ -106,7 +110,7 @@ public class Response extends Message {
     {
         if(result == null)
         {
-            throw new BadAttributeValueException("Result is null",null);
+            throw new BadAttributeValueException("Result is null","null");
         }
 		resultList.add(result);
     }
@@ -140,11 +144,6 @@ public class Response extends Message {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + Arrays.hashCode(id);
-        result = 31 * result + ttl;
-        result = 31 * result + routingService.hashCode();
-        result = 31 * result + Arrays.hashCode(sourceSharOnAddress);
-        result = 31 * result + Arrays.hashCode(destinationSharOnAddress);
         result = 31 * result + responseHost.hashCode();
         result = 31 * result + resultList.hashCode();
         return result;
