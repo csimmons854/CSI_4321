@@ -1,6 +1,8 @@
 package sharon.serialization;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -26,7 +28,26 @@ public class Response extends Message {
 	         throws IOException,
 	                BadAttributeValueException
 	{
-		super(null);
+		super(in);
+		int payload = 0x0000FFFF;
+		int matches = 1;
+		int port = 1;
+		byte [] address;
+		payload = payload & in.getShort();
+
+		matches = in.getByte();
+		port = in.getShort();
+		address = in.getByteArray(4);
+		//System.err.println(payload + " " + Arrays.toString(address));
+		responseHost = new InetSocketAddress(
+				InetAddress.getByAddress(address),port);
+		for(int i = 0; i < matches; i++)
+		{
+			addResult(new Result(
+					in.getInt() & 0x00000000FFFFFFFFL,
+					in.getInt() & 0x00000000FFFFFFFFL,
+					in.getString()));
+		}
 	}
 	
 	/**
@@ -112,6 +133,10 @@ public class Response extends Message {
         {
             throw new BadAttributeValueException("Result is null","null");
         }
+        if((resultList.size() + 1) > 255)
+		{
+			throw new BadAttributeValueException("Result list is full",result.toString());
+		}
 		resultList.add(result);
     }
 

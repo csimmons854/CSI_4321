@@ -8,9 +8,13 @@
 
 package sharon.serialization;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Serialization input for messages
@@ -41,12 +45,18 @@ public class MessageInput {
 
     public String getString() throws IOException {
         String newString = "";
-        char tmp;
-        while ( (tmp = ((char) data.readByte()))!= '\n')
+        ArrayList<Byte> byteList = new ArrayList<Byte>();
+        byte tmp;
+        while ( (tmp = ( data.readByte()))!= '\n')
         {
-            newString += tmp;
+            byteList.add(tmp);
         }
-        return newString;
+        byte [] byteArray = new byte [byteList.toArray().length];
+        for(int i = 0; i < byteArray.length; i++)
+        {
+            byteArray[i] = (byte)byteList.toArray()[i];
+        }
+        return new String(byteArray,"ASCII");
     }
 
     public int getInt() throws IOException
@@ -61,7 +71,7 @@ public class MessageInput {
 
     public byte [] getByteArray(int count) throws IOException {
         byte [] buffer = new byte[count];
-        data.read(buffer,0,count);
+        data.readFully(buffer,0,count);
         return buffer;
     }
 

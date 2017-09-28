@@ -66,7 +66,7 @@ public class MessageOutput {
      */
     public void writeString(String newString) throws IOException
     {
-        msgOut.write((newString + '\n').getBytes());
+        msgOut.write((newString + '\n').getBytes("ASCII"));
         msgOut.flush();
     }
 

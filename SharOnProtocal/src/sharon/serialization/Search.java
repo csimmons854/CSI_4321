@@ -18,7 +18,22 @@ public class Search extends Message {
 			throws IOException,
 		    		BadAttributeValueException
 	{
-		super(null);
+        super(in);        int payload = 0x0000FFFF;
+
+        String temp;
+		payload = payload & in.getShort();
+		temp = in.getString();
+
+
+		if(temp.length() != payload - 1)
+		{
+			throw new IOException(Arrays.toString(getID())+ " " +  getTtl() + temp + " " + payload);
+		}
+		else
+        {
+            searchString = temp;
+        }
+
 	}
 		              
 	/**

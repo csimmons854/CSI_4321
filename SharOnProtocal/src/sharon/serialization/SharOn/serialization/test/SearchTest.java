@@ -214,14 +214,28 @@ public class SearchTest {
 	@Test
 	public void searchConstructorMessageValidTest()
             throws IOException, BadAttributeValueException {
-		byte[] id = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        int ttl = 0;
-        RoutingService routingService = RoutingService.BREADTHFIRSTBROADCAST;
-        byte[] sourceAddress = {0,0,0,0,0};
-        byte[] destinationAddress = {0,0,0,0,0};
-        java.lang.String searchString = "";
+
+		ByteBuffer buffer = ByteBuffer.allocate(1024);
+		byte[] id = {1,2,3,4,5,6,7,8,9,10,11,0,0,0,15};
+		int ttl = -1;
+		RoutingService routingService = RoutingService.BREADTHFIRSTBROADCAST;
+		byte[] sourceAddress = {0,0,0,0,0};
+		byte[] destinationAddress = {0,0,0,0,0};
+
+		buffer.put(id);
+		buffer.put((byte)ttl);
+		buffer.put((byte)0);
+		buffer.put(sourceAddress);
+		buffer.put(destinationAddress);
+		buffer.put((byte)0);
+		buffer.put((byte)5);
+		buffer.put("test\n".getBytes(StandardCharsets.US_ASCII));
+		ByteArrayInputStream newIn = new ByteArrayInputStream(buffer.array());
+		MessageInput newMsg = new MessageInput(newIn);
         
-        Search srch = new Search(null);
+        Search srch = new Search(newMsg);
+        Search srch1 = new Search(id,255,routingService,sourceAddress,destinationAddress,"test");
+        assertEquals(srch1,srch);
 	}
 	
 	/**
@@ -237,24 +251,9 @@ public class SearchTest {
         byte[] destinationAddress = {0,0,0,0,0,0};
         java.lang.String searchString = null;
         
-        Search srch = new Search(null);
+        Search srch = new Search(id,ttl,routingService,sourceAddress,destinationAddress,searchString);
 	}
-	
-	/**
-	 * Tests for search(MessageInput) when in is too small
-	 */
-	@Test
-	public void searchConstructorBadMessageSmallTest()
-            throws IOException, BadAttributeValueException {
-		byte[] id = {0,0,0};
-        int ttl = 0;
-        RoutingService routingService = RoutingService.BREADTHFIRSTBROADCAST;
-        byte[] sourceAddress = {0,0,0};
-        byte[] destinationAddress = {0,0,0};
-        java.lang.String searchString = "";
-        
-        Search srch = new Search(null);
-	}
+
 	
 	/**
 	 * Tests for setting a valid string 
@@ -307,7 +306,6 @@ public class SearchTest {
         Search srch = new Search(id, ttl, routingService, sourceAddress
                 , destinationAddress, searchString);
         srch.encode(new MessageOutput());
-        System.err.println();
     }
 
 	@Test

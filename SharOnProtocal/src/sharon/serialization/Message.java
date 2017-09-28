@@ -1,11 +1,9 @@
 package sharon.serialization;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 
-public class Message {
+public abstract class Message {
 
     private byte[] id;
     private int ttl;
@@ -19,9 +17,28 @@ public class Message {
 	 * 
 	 * @param in deserialization input source
 	 */
-	Message(MessageInput in)
-	{
-		
+	Message(MessageInput in) throws IOException, BadAttributeValueException {
+
+	    if(in == null)
+        {
+            throw new IOException("Null Value");
+        }
+	    id = in.getByteArray(15);
+
+        ttl = in.getByte();
+
+        //convert to unsigned long
+        if(ttl < 0)
+        {
+            ttl = ttl & 0x000000FF;
+        }
+
+        routingService = RoutingService.getRoutingService(in.getByte());
+        sourceSharOnAddress = in.getByteArray(5);
+        destinationSharOnAddress = in.getByteArray(5);
+        System.err.println(this.toString());
+
+
 	}
 	
 	/**
@@ -69,8 +86,7 @@ public class Message {
             throw new BadAttributeValueException("Too small ttl", "" + ttl);
         }
 
-        if (sourceSharOnAddress == null)
-        {
+        if (sourceSharOnAddress == null) {
             throw new BadAttributeValueException("Null sourceAddress",
                     "null");
         }
@@ -188,18 +204,6 @@ public class Message {
 	{
 	    //initialize variables to be used to actually decode a messageInput
 	    int type;
-	    byte [] id;
-	    int ttl;
-	    int routingCode;
-        byte [] source;
-        byte [] destination;
-        String searchString;
-        int payload = 0x0000FFFF;
-        int matches = 1;
-        int port = 1;
-        byte [] address;
-        InetSocketAddress socketAddress;
-        Message msg;
 
 	    if(in == null)
         {
@@ -211,79 +215,17 @@ public class Message {
 
         if(type == 1) //decode Search Message
         {
-            id = in.getByteArray(15);
-
-            ttl = in.getByte();
-
-            //convert to unsigned long
-            if(ttl < 0)
-            {
-                ttl = ttl & 0x000000FF;
-            }
-
-            routingCode =in.getByte();
-            source = in.getByteArray(5);
-            destination = in.getByteArray(5);
-
-            //create a int from two bytes
-            payload = payload & in.getShort();
-            searchString = in.getString();
-
-
-            if(searchString.length() != payload - 1)
-            {
-                throw new IOException("Invalid Payload " + searchString + " " + payload);
-            }
-
-            msg = new Search(id,ttl,
-                    RoutingService.getRoutingService(routingCode),
-                    source,destination,searchString);
-
+            return new Search(in);
         }
         else if(type == 2) //response object
         {
-
-            id = in.getByteArray(15);
-
-            ttl = in.getByte();
-            if(ttl < 0)
-            {
-                ttl = ttl & 0x000000FF;
-            }
-            routingCode = in.getByte();
-            source = in.getByteArray(5);
-            destination = in.getByteArray(5);
-            payload = payload & in.getShort();
-            matches = in.getByte();
-            port = in.getShort();
-            address = in.getByteArray(4);
-            //System.err.println(payload + " " + Arrays.toString(address));
-            socketAddress = new InetSocketAddress(
-                    InetAddress.getByAddress(address),port);
-            if(routingCode > 1)
-            {
-                throw new IOException(type + " " + Arrays.toString(id) +
-                        " " + ttl + " " + routingCode + " " + Arrays.toString(source));
-            }
-
-            msg = new Response(id,ttl,
-                    RoutingService.getRoutingService(routingCode),source,
-                    destination,socketAddress);
-            for(int i = 0; i < matches; i++)
-            {
-                ((Response)msg).addResult(new Result(
-                        in.getInt() & 0x00000000FFFFFFFFL,
-                        in.getInt() & 0x00000000FFFFFFFFL,
-                        in.getString()));
-            }
+            return new Response(in);
         }
         else
         {
             throw new BadAttributeValueException("Invalid Message Type " + type,
                     "" + type);
         }
-
-		return msg;
     }
 	
 	/**
@@ -313,8 +255,7 @@ public class Message {
 	 */
 	public byte[] getID()
 	{
-
-	    return id;
+	    return id.clone();
 	}
 	
 	/**
@@ -342,7 +283,7 @@ public class Message {
             throw new BadAttributeValueException("Too Large ID", id.toString());
         }
 
-        this.id = id;
+        this.id = id.clone();
 	}
 	
 	/**
@@ -421,7 +362,7 @@ public class Message {
 	 */
 	public byte[] getSourceAddress()
 	{
-		return sourceSharOnAddress;
+		return sourceSharOnAddress.clone();
 	}
 	
 	/**
@@ -434,7 +375,6 @@ public class Message {
 	public void setSourceAddress(byte[] sourceAddress)
             throws BadAttributeValueException
     {
-        System.err.println(sourceAddress.length);
         if(sourceAddress.length > 5)
         {
             throw new BadAttributeValueException("Too large sourceAddress",
@@ -447,7 +387,7 @@ public class Message {
                     sourceAddress.toString());
         }
 
-        this.sourceSharOnAddress = sourceAddress;
+        this.sourceSharOnAddress = sourceAddress.clone();
     }
 	
 	/**
@@ -457,7 +397,7 @@ public class Message {
 	 */
 	public byte[] getDestinationAddress()
 	{
-		return destinationSharOnAddress;
+		return destinationSharOnAddress.clone();
 	}
 	
 	/**
@@ -482,7 +422,7 @@ public class Message {
                     destinationAddress.toString());
         }
 
-        this.destinationSharOnAddress = destinationAddress;
+        this.destinationSharOnAddress = destinationAddress.clone();
     }
 
     /**
