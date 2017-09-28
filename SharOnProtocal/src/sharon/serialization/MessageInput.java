@@ -44,7 +44,6 @@ public class MessageInput {
     }
 
     public String getString() throws IOException {
-        String newString = "";
         ArrayList<Byte> byteList = new ArrayList<Byte>();
         byte tmp;
         while ( (tmp = ( data.readByte()))!= '\n')
@@ -80,6 +79,21 @@ public class MessageInput {
         return data.readShort();
     }
 
-
+    public String getNodeResponse() throws IOException {
+        ArrayList<Byte> byteList = new ArrayList<Byte>();
+        byte tmp;
+        while ( (tmp = ( data.readByte()))!= '\n')
+        {
+            byteList.add(tmp);
+        }
+        byteList.add(tmp);
+        byteList.add(data.readByte());
+        byte [] byteArray = new byte [byteList.toArray().length];
+        for(int i = 0; i < byteArray.length; i++)
+        {
+            byteArray[i] = (byte)byteList.toArray()[i];
+        }
+        return new String(byteArray,"ASCII");
+    }
 
 }

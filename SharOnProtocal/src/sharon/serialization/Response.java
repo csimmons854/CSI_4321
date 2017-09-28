@@ -38,7 +38,6 @@ public class Response extends Message {
 		matches = in.getByte();
 		port = in.getShort();
 		address = in.getByteArray(4);
-		//System.err.println(payload + " " + Arrays.toString(address));
 		responseHost = new InetSocketAddress(
 				InetAddress.getByAddress(address),port);
 		for(int i = 0; i < matches; i++)
@@ -180,11 +179,11 @@ public class Response extends Message {
     @Override
     public String toString() {
         return "Response{" +
-                "id=" + Arrays.toString(id) +
-                ", ttl=" + ttl +
-                ", routingService=" + routingService +
-                ", sourceSharOnAddress=" + Arrays.toString(sourceSharOnAddress) +
-                ", destinationSharOnAddress=" + Arrays.toString(destinationSharOnAddress) +
+                "id=" + Arrays.toString(this.getID()) +
+                ", ttl=" + this.getTtl() +
+                ", routingService=" + this.getRoutingService() +
+                ", sourceSharOnAddress=" + Arrays.toString(this.getSourceAddress()) +
+                ", destinationSharOnAddress=" + Arrays.toString(this.getDestinationAddress()) +
                 ", responseHost=" + responseHost +
                 ", resultList=" + resultList +
                 '}';

@@ -18,26 +18,24 @@ public abstract class Message {
 	 * @param in deserialization input source
 	 */
 	Message(MessageInput in) throws IOException, BadAttributeValueException {
-
 	    if(in == null)
         {
             throw new IOException("Null Value");
         }
-	    id = in.getByteArray(15);
+	    this.setID(in.getByteArray(15));
 
-        ttl = in.getByte();
+        int tempTtl = in.getByte();
 
         //convert to unsigned long
-        if(ttl < 0)
+        if(tempTtl < 0)
         {
-            ttl = ttl & 0x000000FF;
+            tempTtl = tempTtl & 0x000000FF;
         }
+        this.setTtl(tempTtl);
 
-        routingService = RoutingService.getRoutingService(in.getByte());
-        sourceSharOnAddress = in.getByteArray(5);
-        destinationSharOnAddress = in.getByteArray(5);
-        System.err.println(this.toString());
-
+        this.setRoutingService(RoutingService.getRoutingService(in.getByte()));
+        this.setSourceAddress(in.getByteArray(5));
+        this.setDestinationAddress(in.getByteArray(5));
 
 	}
 	
