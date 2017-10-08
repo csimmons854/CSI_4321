@@ -1,6 +1,6 @@
 /************************************************
  *
- * Author: Chris Simmons, Mitchell Shannon
+ * Author: Chris Simmons
  * Assignment: Program0Test
  * Class: CSI 4321 Data Communications
  *

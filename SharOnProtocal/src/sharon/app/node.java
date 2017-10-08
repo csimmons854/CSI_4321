@@ -9,13 +9,11 @@ package sharon.app;
 
 import sharon.serialization.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import static sharon.serialization.Message.decode;
 
@@ -64,6 +62,7 @@ public class node implements Runnable{
         //set neighbor address and ports
         String neighborName = args[0];
         int neighborPort = Integer.parseInt(args[1]);
+        String dir = args[2];
 
         //set up initialization string for the handshake
         byte [] initMsg = "INIT SharOn/1.0\n\n".getBytes();
@@ -76,6 +75,9 @@ public class node implements Runnable{
 
         //string to hold the response of the node for the handshake
         String response;
+
+        //HashMap to store what ID's are associated with what search strings
+        HashMap<String, String> searchMap = new HashMap<>();
 
         //System.out.println("NeighborName: " + neighborName);
         //System.out.println("NeighborNode: " + neighborPort);
@@ -102,7 +104,7 @@ public class node implements Runnable{
             //System.out.println("Handshake Established");
 
             //begin listener thread
-            Listener newListener = new Listener(data,outData);
+            Listener newListener = new Listener(data,outData,searchMap, dir);
             newListener.start();
 
             //begin prompting for search messages
@@ -111,10 +113,11 @@ public class node implements Runnable{
                 System.out.println("Enter a search");
                 Scanner reader = new Scanner(System.in);  // Reading from System.in
                 String search = reader.nextLine();
-                System.out.println("Searching for: " + search);
-
                 Search srch = new Search(intToByteArray(id),ttl, RoutingService.BREADTHFIRSTBROADCAST,
                         sourceAddress,destinationAddress,search);
+                searchMap.put(Arrays.toString(srch.getID()), search);
+                System.out.println("Searching for: " + search);
+
                 id++;
                 Sender newSender = new Sender(srch,outData);
                 newSender.start();
@@ -172,24 +175,39 @@ public class node implements Runnable{
         private Message msg;
         private MessageInput inData;
         private MessageOutput outData;
+        private HashMap<String, String> searchMap;
+        private String directory;
 
 
-        Listener(MessageInput in, MessageOutput out) {
+        Listener(MessageInput in, MessageOutput out,HashMap<String,String> searchMap, String dir) {
             inData = in;
             outData = out;
+            this.searchMap = searchMap;
+            directory = dir;
+
         }
 
         public void run() {
-            List<Result> resultList = new ArrayList<Result>();
+            List<Result> resultList;
             try {
                 synchronized (inData) {
                     while (true) {
                         msg = decode(inData);
                         if (msg instanceof Search) {
+                            Response outResponse = new Response(msg.getID(),msg.getTtl(),msg.getRoutingService(),
+                                    msg.getSourceAddress(),msg.getDestinationAddress(),
+                                    new InetSocketAddress(InetAddress.getLocalHost(),8080));
+                                    File dir = new File(directory);
+                                    File[] foundFiles = dir.listFiles((dir1, name) ->
+                                            name.contains(((Search) msg).getSearchString()));
+                                    for(File item : foundFiles)
+                                    {
 
+                                    }
                         }
                         if (msg instanceof Response) {
-                            System.out.println("Search Response for x");
+                            System.out.println("Search Response for " +
+                                    searchMap.get(Arrays.toString(((Response) msg).getID())));
                             System.out.println("Download host: " + ((Response) msg).getResponseHost());
                             resultList = ((Response) msg).getResultList();
                             for(int i = 0; i < resultList.size(); i++)
