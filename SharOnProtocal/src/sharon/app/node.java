@@ -79,12 +79,9 @@ public class node implements Runnable{
         //HashMap to store what ID's are associated with what search strings
         HashMap<String, String> searchMap = new HashMap<>();
 
-        //System.out.println("NeighborName: " + neighborName);
-        //System.out.println("NeighborNode: " + neighborPort);
 
         //set up the socket to be used for communication between nodes
         Socket clientSocket = new Socket(neighborName, neighborPort);
-        //System.out.println("Connected to server...sending echo string");
 
         //wrap the output and input streams in MessageInput and MessageOutput
         //classes
@@ -121,7 +118,6 @@ public class node implements Runnable{
                 id++;
                 Sender newSender = new Sender(srch,outData);
                 newSender.start();
-
             }
         }
         else {
@@ -194,16 +190,24 @@ public class node implements Runnable{
                     while (true) {
                         msg = decode(inData);
                         if (msg instanceof Search) {
-                            Response outResponse = new Response(msg.getID(),msg.getTtl(),msg.getRoutingService(),
-                                    msg.getSourceAddress(),msg.getDestinationAddress(),
-                                    new InetSocketAddress(InetAddress.getLocalHost(),8080));
-                                    File dir = new File(directory);
-                                    File[] foundFiles = dir.listFiles((dir1, name) ->
-                                            name.contains(((Search) msg).getSearchString()));
-                                    for(File item : foundFiles)
-                                    {
+                            Response outResponse =
+                                new Response(msg.getID(),msg.getTtl(),msg.getRoutingService(),
+                                             msg.getSourceAddress(),msg.getDestinationAddress(),
+                                             new InetSocketAddress(InetAddress.getLocalHost(),8080));
 
-                                    }
+                            File dir = new File(directory);
+                            File[] foundFiles = dir.listFiles((dir1, name) ->
+                                    name.contains(((Search) msg).getSearchString()));
+                            byte fileID = 0;
+                            if(foundFiles != null)
+                            {
+                                for(File item : foundFiles)
+                                {
+                                    fileID++;
+                                    outResponse.addResult(new Result(fileID,item.length(),item.getName()));
+                                }
+                            }
+                            outResponse.encode(outData);
                         }
                         if (msg instanceof Response) {
                             System.out.println("Search Response for " +
@@ -212,13 +216,11 @@ public class node implements Runnable{
                             resultList = ((Response) msg).getResultList();
                             for(int i = 0; i < resultList.size(); i++)
                             {
-
                                 System.out.println("\t" + resultList.get(i).getFileName()
                                         + ": ID " + resultList.get(i).getFileID()
                                         + " (" + resultList.get(i).getFileSize()
                                         + " bytes)");
                             }
-
                         }
                     }
                 }
