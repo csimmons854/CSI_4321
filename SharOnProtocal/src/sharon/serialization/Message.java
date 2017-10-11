@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public abstract class Message {
-
     private byte[] id;
     private int ttl;
     private RoutingService routingService;

@@ -7,13 +7,16 @@
  ************************************************/
 package sharon.app;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import sharon.serialization.*;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static sharon.serialization.Message.decode;
 
@@ -22,8 +25,6 @@ import static sharon.serialization.Message.decode;
  * responses
  */
 public class node implements Runnable{
-    private String searchString;
-
 
     /**
      * @param id in int form to be converted to the 15 byte array form for
@@ -57,21 +58,28 @@ public class node implements Runnable{
      */
     public static void main(String [] args) throws IOException, BadAttributeValueException {
         if ((args.length < 3) ) { // Test for correct # of args
-            throw new IllegalArgumentException("Parameter(s): <Address/Name> <Port> <Directory>");
+            throw new IllegalArgumentException("Parameter(s): <Port> <Directory> <Download Port>");
         }
         //set neighbor address and ports
-        String neighborName = args[0];
-        int neighborPort = Integer.parseInt(args[1]);
-        String dir = args[2];
+        String neighborName;
+        int neighborPort = 0;
+        int serverPort =  Integer.parseInt(args[0]);
+        int downloadPort = Integer.parseInt(args[2]);
+        String dir = args[1];
 
         //set up initialization string for the handshake
         byte [] initMsg = "INIT SharOn/1.0\n\n".getBytes();
 
         //set default values for sent packets
         int id = 0;
-        int ttl = 100;
+        int ttl = 1;
         byte[] sourceAddress = {0,0,0,0,0};
         byte[] destinationAddress = {0,0,0,0,0};
+
+        //flag to end program;
+        Boolean exitFlag = false;
+
+        CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
 
         //string to hold the response of the node for the handshake
         String response;
@@ -81,49 +89,63 @@ public class node implements Runnable{
 
 
         //set up the socket to be used for communication between nodes
-        Socket clientSocket = new Socket(neighborName, neighborPort);
+        Socket clientSocket;
+        ServerSocket serverSocket = new ServerSocket(serverPort);
 
-        //wrap the output and input streams in MessageInput and MessageOutput
-        //classes
-        OutputStream out = clientSocket.getOutputStream();
-        MessageOutput outData = new MessageOutput(out);
-        InputStream in = clientSocket.getInputStream();
-        MessageInput data = new MessageInput(in);
+        IncomingConnections incomingConnections = new IncomingConnections(serverSocket,
+                                                        connections, searchMap,dir, serverPort);
+        incomingConnections.start();
 
-        //send the initialization message
-        out.write(initMsg);
+        while(!exitFlag) {
+            System.out.println("Enter a Command");
+            Scanner reader = new Scanner(System.in);  // Reading from System.in
+            String getLine = reader.nextLine();
+            String command = "";
+            StringTokenizer commandTokenizer = new StringTokenizer(getLine);
 
-        //store the response
-        response = data.getNodeResponse();
-
-        //if response is good then began waiting for packets or send packets
-        if(response.equals("OK SharOn\n\n")) {
-            //System.out.println("Handshake Established");
-
-            //begin listener thread
-            Listener newListener = new Listener(data,outData,searchMap, dir);
-            newListener.start();
-
-            //begin prompting for search messages
-            while(true)
-            {
-                System.out.println("Enter a search");
-                Scanner reader = new Scanner(System.in);  // Reading from System.in
-                String search = reader.nextLine();
-                Search srch = new Search(intToByteArray(id),ttl, RoutingService.BREADTHFIRSTBROADCAST,
-                        sourceAddress,destinationAddress,search);
-                searchMap.put(Arrays.toString(srch.getID()), search);
-                System.out.println("Searching for: " + search);
-
-                id++;
-                Sender newSender = new Sender(srch,outData);
-                newSender.start();
+            if(!getLine.equals("")) {
+                command = commandTokenizer.nextToken();
             }
-        }
-        else {
-            System.out.println("HandShake Rejected\n" + response);
-        }
 
+            if(command == "exit") {
+                exitFlag = true;
+            }else if(command.equals("connect")) {
+                neighborName = commandTokenizer.nextToken();
+                neighborPort = Integer.parseInt(commandTokenizer.nextToken());
+                Connection newConnection = new Connection(new Socket(neighborName,neighborPort));
+                newConnection.getClientSocket().getOutputStream().write(initMsg);
+                response = newConnection.getInData().getNodeResponse();
+
+
+                if(response.equals("OK SharOn\n\n")) {
+                    connections.add(newConnection);
+
+                    Listener newListener = new Listener(newConnection, searchMap, dir, serverPort);
+                    newListener.start();
+                }else {
+                    System.out.println("HandShake Rejected\n" + response);
+                }
+            }else if (command.equals("download")){
+
+            }else{
+                System.out.println("# of connections " + connections.size());
+                Search srch = new Search(intToByteArray(id),ttl, RoutingService.BREADTHFIRSTBROADCAST,
+                        sourceAddress,destinationAddress,command);
+                searchMap.put(Arrays.toString(srch.getID()), command);
+                System.out.println("Searching for: " + command);
+                    for (Connection connection : connections) {
+                        if(!connection.getClientSocket().isClosed()) {
+                            Sender newSender = new Sender(srch, connection);
+                            newSender.start();
+                        }else{
+                            connections.remove(connection);
+                        }
+
+                    }
+
+            }
+            id++;
+        }
     }
 
 
@@ -140,17 +162,61 @@ public class node implements Runnable{
     static class Sender implements Runnable {
         private Thread t;
         private Message msg;
-        private MessageOutput outData;
+        private Connection connection;
 
-        Sender(Message msg, MessageOutput out) {
+        Sender(Message msg, Connection newConnection) {
             this.msg = msg;
-            outData = out;
+            connection = newConnection;
         }
 
         public void run() {
             try {
-                synchronized (outData) {
-                    msg.encode(outData);
+                synchronized (connection.getOutData()) {
+                    msg.encode(connection.getOutData());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void start() {
+            if (t == null) {
+                t = new Thread(this);
+                t.start();
+            }
+
+        }
+    }
+
+    static class IncomingConnections implements Runnable {
+        private Thread t;
+        private ServerSocket server;
+        private CopyOnWriteArrayList<Connection> connections;
+        private HashMap<String,String> searchMap;
+        private String dir;
+        private int port;
+
+        IncomingConnections(ServerSocket newServer, CopyOnWriteArrayList<Connection> newConnections,
+                            HashMap<String,String> searchMap, String dir, int newPort) {
+            server = newServer;
+            connections = newConnections;
+            this.searchMap = searchMap;
+            this.dir = dir;
+            port = newPort;
+        }
+
+        public void run() {
+            try {
+                synchronized (connections) {
+                    Socket neighborNodeConnection = server.accept();
+                    Connection newConnection = new Connection(neighborNodeConnection);
+                    if(newConnection.getInData().getNodeResponse().equals("INIT SharOn/1.0\n\n")) {
+                        newConnection.getOutData().writeByteArray("OK SharOn\n\n".getBytes("ASCII"));
+                        connections.add(newConnection);
+                        Listener newListener = new Listener(newConnection, searchMap, dir, port);
+                        newListener.start();
+                    }
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -172,13 +238,17 @@ public class node implements Runnable{
         private MessageInput inData;
         private MessageOutput outData;
         private HashMap<String, String> searchMap;
+        private Connection connection;
+        private int port;
         private String directory;
 
 
-        Listener(MessageInput in, MessageOutput out,HashMap<String,String> searchMap, String dir) {
-            inData = in;
-            outData = out;
+        Listener(Connection newConnection, HashMap<String,String> searchMap, String dir, int newPort) {
+            inData = newConnection.getInData();
+            outData = newConnection.getOutData();
+            connection = newConnection;
             this.searchMap = searchMap;
+            port = newPort;
             directory = dir;
 
         }
@@ -193,17 +263,15 @@ public class node implements Runnable{
                             Response outResponse =
                                 new Response(msg.getID(),msg.getTtl(),msg.getRoutingService(),
                                              msg.getSourceAddress(),msg.getDestinationAddress(),
-                                             new InetSocketAddress(InetAddress.getLocalHost(),8080));
+                                             new InetSocketAddress(InetAddress.getLocalHost(),port));
 
                             File dir = new File(directory);
                             File[] foundFiles = dir.listFiles((dir1, name) ->
                                     name.contains(((Search) msg).getSearchString()));
-                            byte fileID = 0;
-                            if(foundFiles != null)
-                            {
-                                for(File item : foundFiles)
-                                {
-                                    fileID++;
+                            long fileID;
+                            if(foundFiles != null) {
+                                for(File item : foundFiles) {
+                                    fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
                                     outResponse.addResult(new Result(fileID,item.length(),item.getName()));
                                 }
                             }
@@ -211,11 +279,10 @@ public class node implements Runnable{
                         }
                         if (msg instanceof Response) {
                             System.out.println("Search Response for " +
-                                    searchMap.get(Arrays.toString(((Response) msg).getID())));
+                                    searchMap.get(Arrays.toString(msg.getID())));
                             System.out.println("Download host: " + ((Response) msg).getResponseHost());
                             resultList = ((Response) msg).getResultList();
-                            for(int i = 0; i < resultList.size(); i++)
-                            {
+                            for(int i = 0; i < resultList.size(); i++) {
                                 System.out.println("\t" + resultList.get(i).getFileName()
                                         + ": ID " + resultList.get(i).getFileID()
                                         + " (" + resultList.get(i).getFileSize()
@@ -227,6 +294,11 @@ public class node implements Runnable{
             } catch (BadAttributeValueException e) {
                 e.printStackTrace();
             } catch (IOException e) {
+                try {
+                    connection.getClientSocket().close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
                 e.printStackTrace();
             }
         }
