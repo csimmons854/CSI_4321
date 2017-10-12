@@ -100,6 +100,7 @@ public class node implements Runnable{
         incomingConnections.start();
 
         DownloadConnections downloadConnections = new DownloadConnections(downloadSocket,dir);
+        downloadConnections.start();
 
         while(!exitFlag) {
             System.out.println("Enter a Command");
@@ -149,6 +150,8 @@ public class node implements Runnable{
 
                     if(!checkForFile(fileName,dir)) {
                         try {
+                            System.out.println("Download name: " + outDownloadName);
+                            System.out.println("Download Port: " + outDownloadPort);
                             Connection newConnection = new Connection(new Socket(outDownloadName, outDownloadPort));
                             newConnection.getClientSocket().getOutputStream().write(initMsg);
                             response = newConnection.getInData().getNodeResponse();
@@ -216,6 +219,7 @@ public class node implements Runnable{
                 while(true)
                 {
                     clientCon = downloadServer.accept();
+                    System.out.println("here");
                     downloadExecutor.execute(new download(clientCon,dir));
                 }
             } catch (IOException e) {
@@ -228,7 +232,6 @@ public class node implements Runnable{
                 t = new Thread(this);
                 t.start();
             }
-
         }
     }
 
@@ -313,19 +316,18 @@ public class node implements Runnable{
         public void run() {
             try {
                 synchronized (connections) {
-                    Socket neighborNodeConnection = server.accept();
-                    Connection newConnection = new Connection(neighborNodeConnection);
-                    if(newConnection.getInData().getNodeResponse().equals("INIT SharOn/1.0\n\n")) {
-                        newConnection.getOutData().writeByteArray("OK SharOn\n\n".getBytes("ASCII"));
-                        connections.add(newConnection);
-                        Listener newListener = new Listener(newConnection, searchMap, dir, port);
-                        newListener.start();
+                    while (true) {
+                        Socket neighborNodeConnection = server.accept();
+                        Connection newConnection = new Connection(neighborNodeConnection);
+                        if (newConnection.getInData().getNodeResponse().equals("INIT SharOn/1.0\n\n")) {
+                            newConnection.getOutData().writeByteArray("OK SharOn\n\n".getBytes("ASCII"));
+                            connections.add(newConnection);
+                            Listener newListener = new Listener(newConnection, searchMap, dir, port);
+                            newListener.start();
+                        } else {
+                            //rejection message
+                        }
                     }
-                    else
-                    {
-                       //rejection message
-                    }
-
                 }
             } catch (IOException e) {
                 e.printStackTrace();
