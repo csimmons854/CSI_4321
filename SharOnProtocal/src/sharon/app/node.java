@@ -91,13 +91,15 @@ public class node implements Runnable{
 
         //set up the socket to be used for communication between nodes
         ServerSocket serverSocket = new ServerSocket(serverPort);
-        downloadSocket = new ServerSocket(downloadPort);
+        ServerSocket downloadSocket = new ServerSocket(downloadPort);
 
-        downloadExecutor = Executors.newFixedThreadPool(4);
+
 
         IncomingConnections incomingConnections = new IncomingConnections(serverSocket,
-                                                        connections, searchMap,dir, serverPort);
+                                                        connections, searchMap, dir, serverPort);
         incomingConnections.start();
+
+        DownloadConnections downloadConnections = new DownloadConnections(downloadSocket,dir);
 
         while(!exitFlag) {
             System.out.println("Enter a Command");
@@ -121,7 +123,6 @@ public class node implements Runnable{
                         Connection newConnection = new Connection(new Socket(neighborName,neighborPort));
                         newConnection.getClientSocket().getOutputStream().write(initMsg);
                         response = newConnection.getInData().getNodeResponse();
-
                         if(response.equals("OK SharOn\n\n")) {
                             connections.add(newConnection);
 
@@ -139,6 +140,7 @@ public class node implements Runnable{
                             "<connector node> <connector port>");
                 }
             }else if (command.equals("download")){
+
                 if(commandTokenizer.countTokens() == 4) {
                     String outDownloadName = commandTokenizer.nextToken();
                     int outDownloadPort = Integer.parseInt(commandTokenizer.nextToken());
@@ -190,16 +192,43 @@ public class node implements Runnable{
         }
     }
 
-
-
     @Override
     public void run() {
-        try {
-            for (;;) {
-                downloadExecutor.execute(new download(downloadSocket.accept(),dir));
+
+    }
+
+    static class DownloadConnections implements Runnable {
+        private Thread t;
+        private ServerSocket downloadServer;
+        private String dir;
+        private Socket clientCon;
+
+
+        DownloadConnections(ServerSocket newServer, String dir) {
+
+            downloadServer = newServer;
+            this.dir = dir;
+        }
+
+        public void run() {
+            try {
+                downloadExecutor = Executors.newFixedThreadPool(4);
+                while(true)
+                {
+                    clientCon = downloadServer.accept();
+                    downloadExecutor.execute(new download(clientCon,dir));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException ex) {
-            downloadExecutor.shutdown();
+        }
+
+        public void start() {
+            if (t == null) {
+                t = new Thread(this);
+                t.start();
+            }
+
         }
     }
 
@@ -218,12 +247,10 @@ public class node implements Runnable{
                 File newFile = findFileByID(fileID,dir);
                 FileInputStream fileInputStream;
                 int data;
-                if(newFile != null)
-                {
+                if(newFile != null) {
                     fileInputStream = new FileInputStream(newFile);
                     clientCon.getOutData().writeByteArray("OK\n\n".getBytes());
-                    while ((data = fileInputStream.read()) > 0)
-                    {
+                    while ((data = fileInputStream.read()) > 0) {
                         clientCon.getOutData().writeByte((byte)data);
                     }
 
@@ -232,7 +259,6 @@ public class node implements Runnable{
                 e.printStackTrace();
             }
         }
-
     }
 
     /**
@@ -425,11 +451,11 @@ public class node implements Runnable{
 
         if(foundFiles != null) {
             for(File item : foundFiles) {
-                if(fileName.equals(item.getName()));
+                if(fileName.equals(item.getName()))
                 {
+                    System.out.println(fileName +  " = " + item.getName());
                     foundFlag = true;
                 }
-
             }
         }
         return foundFlag;
