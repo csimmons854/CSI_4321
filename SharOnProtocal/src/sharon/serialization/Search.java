@@ -25,7 +25,8 @@ public class Search extends Message {
 			throws IOException,
 		    		BadAttributeValueException
 	{
-        super(in);        int payload = 0x0000FFFF;
+        super(in);
+        int payload = 0x0000FFFF;
 
         String temp;
 		payload = payload & in.getShort();

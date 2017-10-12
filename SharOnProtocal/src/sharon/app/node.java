@@ -11,10 +11,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import sharon.serialization.*;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -107,23 +104,26 @@ public class node implements Runnable{
                 command = commandTokenizer.nextToken();
             }
 
-            if(command == "exit") {
+            if(command.equals("exit")) {
                 exitFlag = true;
             }else if(command.equals("connect")) {
                 neighborName = commandTokenizer.nextToken();
                 neighborPort = Integer.parseInt(commandTokenizer.nextToken());
-                Connection newConnection = new Connection(new Socket(neighborName,neighborPort));
-                newConnection.getClientSocket().getOutputStream().write(initMsg);
-                response = newConnection.getInData().getNodeResponse();
+                try{
+                    Connection newConnection = new Connection(new Socket(neighborName,neighborPort));
+                    newConnection.getClientSocket().getOutputStream().write(initMsg);
+                    response = newConnection.getInData().getNodeResponse();
 
+                    if(response.equals("OK SharOn\n\n")) {
+                        connections.add(newConnection);
 
-                if(response.equals("OK SharOn\n\n")) {
-                    connections.add(newConnection);
-
-                    Listener newListener = new Listener(newConnection, searchMap, dir, serverPort);
-                    newListener.start();
-                }else {
-                    System.out.println("HandShake Rejected\n" + response);
+                        Listener newListener = new Listener(newConnection, searchMap, dir, serverPort);
+                        newListener.start();
+                    }else {
+                        System.out.println("HandShake Rejected\n" + response);
+                    }
+                } catch(ConnectException e) {
+                    e.printStackTrace();
                 }
             }else if (command.equals("download")){
 
@@ -133,15 +133,14 @@ public class node implements Runnable{
                         sourceAddress,destinationAddress,command);
                 searchMap.put(Arrays.toString(srch.getID()), command);
                 System.out.println("Searching for: " + command);
-                    for (Connection connection : connections) {
-                        if(!connection.getClientSocket().isClosed()) {
-                            Sender newSender = new Sender(srch, connection);
-                            newSender.start();
-                        }else{
-                            connections.remove(connection);
-                        }
-
+                for (Connection connection : connections) {
+                    if(!connection.getClientSocket().isClosed()) {
+                        Sender newSender = new Sender(srch, connection);
+                        newSender.start();
+                    }else{
+                        connections.remove(connection);
                     }
+                }
 
             }
             id++;
@@ -173,6 +172,7 @@ public class node implements Runnable{
             try {
                 synchronized (connection.getOutData()) {
                     msg.encode(connection.getOutData());
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -272,7 +272,11 @@ public class node implements Runnable{
                             if(foundFiles != null) {
                                 for(File item : foundFiles) {
                                     fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
-                                    outResponse.addResult(new Result(fileID,item.length(),item.getName()));
+                                    try {
+                                        outResponse.addResult(new Result(fileID,item.length(),item.getName()));
+                                    }catch (BadAttributeValueException e){
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                             outResponse.encode(outData);
