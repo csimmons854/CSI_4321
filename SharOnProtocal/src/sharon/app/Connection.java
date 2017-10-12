@@ -20,6 +20,10 @@ public class Connection {
         inData = new MessageInput(clientSocket.getInputStream());
     }
 
+    public void writeMessage(String message) throws IOException {
+        outData.writeByteArray(message.getBytes("ASCII"));
+    }
+
     public Socket getClientSocket() {
         return clientSocket;
     }

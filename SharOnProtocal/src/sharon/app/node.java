@@ -14,6 +14,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static sharon.serialization.Message.decode;
 
@@ -22,7 +24,9 @@ import static sharon.serialization.Message.decode;
  * responses
  */
 public class node implements Runnable{
-
+    static private ExecutorService downloadExecutor = null;
+    static private String dir;
+    static private ServerSocket downloadSocket;
     /**
      * @param id in int form to be converted to the 15 byte array form for
      *           the protocol
@@ -58,11 +62,11 @@ public class node implements Runnable{
             throw new IllegalArgumentException("Parameter(s): <Port> <Directory> <Download Port>");
         }
         //set neighbor address and ports
-        String neighborName;
+        String neighborName = "";
         int neighborPort = 0;
         int serverPort =  Integer.parseInt(args[0]);
         int downloadPort = Integer.parseInt(args[2]);
-        String dir = args[1];
+        dir = args[1];
 
         //set up initialization string for the handshake
         byte [] initMsg = "INIT SharOn/1.0\n\n".getBytes();
@@ -86,8 +90,10 @@ public class node implements Runnable{
 
 
         //set up the socket to be used for communication between nodes
-        Socket clientSocket;
         ServerSocket serverSocket = new ServerSocket(serverPort);
+        downloadSocket = new ServerSocket(downloadPort);
+
+        downloadExecutor = Executors.newFixedThreadPool(4);
 
         IncomingConnections incomingConnections = new IncomingConnections(serverSocket,
                                                         connections, searchMap,dir, serverPort);
@@ -107,26 +113,63 @@ public class node implements Runnable{
             if(command.equals("exit")) {
                 exitFlag = true;
             }else if(command.equals("connect")) {
-                neighborName = commandTokenizer.nextToken();
-                neighborPort = Integer.parseInt(commandTokenizer.nextToken());
-                try{
-                    Connection newConnection = new Connection(new Socket(neighborName,neighborPort));
-                    newConnection.getClientSocket().getOutputStream().write(initMsg);
-                    response = newConnection.getInData().getNodeResponse();
+                if(commandTokenizer.countTokens() >= 2) {
+                    neighborName = commandTokenizer.nextToken();
+                    neighborPort = Integer.parseInt(commandTokenizer.nextToken());
 
-                    if(response.equals("OK SharOn\n\n")) {
-                        connections.add(newConnection);
+                    try{
+                        Connection newConnection = new Connection(new Socket(neighborName,neighborPort));
+                        newConnection.getClientSocket().getOutputStream().write(initMsg);
+                        response = newConnection.getInData().getNodeResponse();
 
-                        Listener newListener = new Listener(newConnection, searchMap, dir, serverPort);
-                        newListener.start();
-                    }else {
-                        System.out.println("HandShake Rejected\n" + response);
+                        if(response.equals("OK SharOn\n\n")) {
+                            connections.add(newConnection);
+
+                            Listener newListener = new Listener(newConnection, searchMap, dir, serverPort);
+                            newListener.start();
+                        }else {
+                            System.out.println("HandShake Rejected\n" + response);
+                        }
+                    } catch(ConnectException e) {
+                        e.printStackTrace();
                     }
-                } catch(ConnectException e) {
-                    e.printStackTrace();
+
+                } else {
+                    System.out.println("Invalid connect format connect " +
+                            "<connector node> <connector port>");
                 }
             }else if (command.equals("download")){
+                if(commandTokenizer.countTokens() == 4) {
+                    String outDownloadName = commandTokenizer.nextToken();
+                    int outDownloadPort = Integer.parseInt(commandTokenizer.nextToken());
+                    String fileID = commandTokenizer.nextToken();
+                    String fileName = commandTokenizer.nextToken();
 
+                    if(!checkForFile(fileName,dir)) {
+                        try {
+                            Connection newConnection = new Connection(new Socket(outDownloadName, outDownloadPort));
+                            newConnection.getClientSocket().getOutputStream().write(initMsg);
+                            response = newConnection.getInData().getNodeResponse();
+                            if (response.equals("OK SharOn\n\n")) {
+                                newConnection.writeMessage(fileID + "\n");
+                            } else {
+                                System.out.println("HandShake Rejected\n" + response);
+                            }
+                        } catch (ConnectException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    else
+                    {
+                        System.out.println("File already exists in directory");
+                    }
+                }
+                else
+                {
+                    System.out.println("Invalid download format: download " +
+                            "<download node> <download port> <File ID> " +
+                            "<File Name");
+                }
             }else{
                 System.out.println("# of connections " + connections.size());
                 Search srch = new Search(intToByteArray(id),ttl, RoutingService.BREADTHFIRSTBROADCAST,
@@ -151,9 +194,46 @@ public class node implements Runnable{
 
     @Override
     public void run() {
-
+        try {
+            for (;;) {
+                downloadExecutor.execute(new download(downloadSocket.accept(),dir));
+            }
+        } catch (IOException ex) {
+            downloadExecutor.shutdown();
+        }
     }
 
+    static class download implements Runnable {
+        private Connection clientCon;
+        private String dir;
+
+        download(Socket downloadSocket, String directory) throws IOException {
+            clientCon = new Connection(downloadSocket);
+            dir = directory;
+        }
+
+        public void run() {
+            try {
+                Long fileID = Long.parseLong(clientCon.getInData().getString());
+                File newFile = findFileByID(fileID,dir);
+                FileInputStream fileInputStream;
+                int data;
+                if(newFile != null)
+                {
+                    fileInputStream = new FileInputStream(newFile);
+                    clientCon.getOutData().writeByteArray("OK\n\n".getBytes());
+                    while ((data = fileInputStream.read()) > 0)
+                    {
+                        clientCon.getOutData().writeByte((byte)data);
+                    }
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
     /**
      * Sender thread to send searches to other nodes
@@ -172,7 +252,6 @@ public class node implements Runnable{
             try {
                 synchronized (connection.getOutData()) {
                     msg.encode(connection.getOutData());
-
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -215,6 +294,10 @@ public class node implements Runnable{
                         connections.add(newConnection);
                         Listener newListener = new Listener(newConnection, searchMap, dir, port);
                         newListener.start();
+                    }
+                    else
+                    {
+                       //rejection message
                     }
 
                 }
@@ -272,6 +355,7 @@ public class node implements Runnable{
                             if(foundFiles != null) {
                                 for(File item : foundFiles) {
                                     fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
+                                    System.out.println("Name: " + item.getName() + " ID: " + fileID);
                                     try {
                                         outResponse.addResult(new Result(fileID,item.length(),item.getName()));
                                     }catch (BadAttributeValueException e){
@@ -314,6 +398,41 @@ public class node implements Runnable{
             }
 
         }
+    }
+
+    static public File findFileByID(Long id, String directory) {
+        File dir = new File(directory);
+        File foundFile = null;
+        File[] foundFiles = dir.listFiles((dir1, name) ->
+                name.contains(""));
+        long fileID;
+        if(foundFiles != null) {
+            for(File item : foundFiles) {
+                fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
+                if(fileID == id) {
+                    foundFile = item;
+                }
+            }
+        }
+        return foundFile;
+    }
+
+    static public Boolean checkForFile(String fileName, String directory) {
+        File dir = new File(directory);
+        Boolean foundFlag = false;
+        File[] foundFiles = dir.listFiles((dir1, name) ->
+                name.contains(""));
+
+        if(foundFiles != null) {
+            for(File item : foundFiles) {
+                if(fileName.equals(item.getName()));
+                {
+                    foundFlag = true;
+                }
+
+            }
+        }
+        return foundFlag;
     }
 
 }
