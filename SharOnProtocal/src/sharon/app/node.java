@@ -9,6 +9,7 @@ package sharon.app;
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import sharon.serialization.*;
+import sun.misc.IOUtils;
 
 import java.io.*;
 import java.net.*;
@@ -153,12 +154,17 @@ public class node implements Runnable{
                             System.out.println("Download name: " + outDownloadName);
                             System.out.println("Download Port: " + outDownloadPort);
                             Connection newConnection = new Connection(new Socket(outDownloadName, outDownloadPort));
-                            newConnection.getClientSocket().getOutputStream().write(initMsg);
-                            response = newConnection.getInData().getNodeResponse();
-                            if (response.equals("OK SharOn\n\n")) {
-                                newConnection.writeMessage(fileID + "\n");
-                            } else {
-                                System.out.println("HandShake Rejected\n" + response);
+                            newConnection.writeMessage(fileID + "\n");
+                            if(newConnection.getInData().getNodeResponse().equals("OK\n\n"))
+                            {
+                                File newFile = new File(dir + "\\" + fileName);
+                                OutputStream out = new FileOutputStream(newFile);
+                                InputStream in = newConnection.getClientSocket().getInputStream();
+                                byte[] buffer = new byte[1024];
+                                int read;
+                                while ((read = in.read(buffer)) != -1) {
+                                    out.write(buffer, 0, read);
+                                }
                             }
                         } catch (ConnectException e) {
                             e.printStackTrace();
@@ -219,7 +225,6 @@ public class node implements Runnable{
                 while(true)
                 {
                     clientCon = downloadServer.accept();
-                    System.out.println("here");
                     downloadExecutor.execute(new download(clientCon,dir));
                 }
             } catch (IOException e) {
@@ -256,8 +261,12 @@ public class node implements Runnable{
                     while ((data = fileInputStream.read()) > 0) {
                         clientCon.getOutData().writeByte((byte)data);
                     }
-
                 }
+                else
+                {
+                    //regectMessage
+                }
+                clientCon.getClientSocket().close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
