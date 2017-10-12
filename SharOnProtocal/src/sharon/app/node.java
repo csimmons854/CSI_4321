@@ -165,6 +165,8 @@ public class node implements Runnable{
                                 while ((read = in.read(buffer)) != -1) {
                                     out.write(buffer, 0, read);
                                 }
+                                out.close();
+                                in.close();
                             }
                         } catch (ConnectException e) {
                             e.printStackTrace();
@@ -183,19 +185,24 @@ public class node implements Runnable{
                 }
             }else{
                 System.out.println("# of connections " + connections.size());
-                Search srch = new Search(intToByteArray(id),ttl, RoutingService.BREADTHFIRSTBROADCAST,
-                        sourceAddress,destinationAddress,command);
-                searchMap.put(Arrays.toString(srch.getID()), command);
-                System.out.println("Searching for: " + command);
-                for (Connection connection : connections) {
-                    if(!connection.getClientSocket().isClosed()) {
-                        Sender newSender = new Sender(srch, connection);
-                        newSender.start();
-                    }else{
-                        connections.remove(connection);
+                try {
+                    Search srch = new Search(intToByteArray(id),ttl, RoutingService.BREADTHFIRSTBROADCAST,
+                            sourceAddress,destinationAddress,command);
+                    searchMap.put(Arrays.toString(srch.getID()), command);
+                    System.out.println("Searching for: " + command);
+                    for (Connection connection : connections) {
+                        if(!connection.getClientSocket().isClosed()) {
+                            Sender newSender = new Sender(srch, connection);
+                            newSender.start();
+                        }else{
+                            connections.remove(connection);
+                        }
                     }
                 }
-
+                catch (BadAttributeValueException e)
+                {
+                    e.printStackTrace();
+                }
             }
             id++;
         }
