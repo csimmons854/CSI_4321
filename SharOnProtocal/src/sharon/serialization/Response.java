@@ -43,7 +43,7 @@ public class Response extends Message {
 		payload = payload & in.getShort();
 
 		matches = in.getByte();
-		port = in.getShort();
+		port = in.getShort() & 0x0000FFFF;
 		address = in.getByteArray(4);
 		responseHost = new InetSocketAddress(
 				InetAddress.getByAddress(address),port);
