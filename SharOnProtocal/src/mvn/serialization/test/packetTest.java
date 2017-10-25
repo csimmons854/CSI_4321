@@ -18,8 +18,8 @@ import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 
-import static mvn.serialization.ErrorType.None;
-import static mvn.serialization.PacketType.AnswerRequest;
+import static mvn.serialization.ErrorType.*;
+import static mvn.serialization.PacketType.*;
 import static org.junit.Assert.*;
 
 
@@ -30,13 +30,14 @@ public class packetTest {
     @Test
     public void packetByteArrayConstructorSuccessTest() throws IOException,
             IllegalArgumentException {
-        byte [] buffer = null;
-        PacketType type = AnswerRequest;
+        byte [] buffer = {0x10,0x00,0x01,0x00};
+
+        PacketType type = RequestNodes;
         ErrorType error = None;
         //Will build buffer later when I implement constructor
 
         Packet packet1 = new Packet(buffer);
-        Packet packet2 = new Packet(type,error,0);
+        Packet packet2 = new Packet(type,error,1);
 
         assertEquals(packet2,packet1);
     }
@@ -80,8 +81,8 @@ public class packetTest {
     @Test (expected = IllegalArgumentException.class)
     public void packetByteArrayConstructorBufferBadTypeTest() throws
             IOException, IllegalArgumentException {
-        byte [] buffer = null;
-        //Will build buffer later when I implement constructor
+
+        byte [] buffer = {0x1F,0x00,0x01,0x00};
 
         new Packet(buffer);
     }
@@ -92,8 +93,8 @@ public class packetTest {
     @Test (expected = IllegalArgumentException.class)
     public void packetByteArrayConstructorBufferBadErrorTest() throws
             IOException, IllegalArgumentException {
-        byte [] buffer = null;
-        //Will build buffer later when I implement constructor
+
+        byte [] buffer = {0x10,0x0F,0x01,0x00};
 
         new Packet(buffer);
     }
@@ -118,8 +119,8 @@ public class packetTest {
     @Test (expected = IllegalArgumentException.class)
     public void packetConstructorBadPacketTypeTooSmallTest() throws
             IOException, IllegalArgumentException {
-        Packet packet1 = new Packet(AnswerRequest,None,-1);
 
+        new Packet(AnswerRequest,None,-1);
     }
 
 
@@ -130,8 +131,8 @@ public class packetTest {
     @Test (expected = IllegalArgumentException.class)
     public void packetConstructorBadPacketTypeTooLargeTest() throws
             IOException, IllegalArgumentException {
-        Packet packet1 = new Packet(AnswerRequest,None,256);
 
+        new Packet(AnswerRequest,None,256);
     }
 
     /**
@@ -140,11 +141,10 @@ public class packetTest {
     @Test
     public void encodeSuccessTest() throws Exception {
         //Buffer to compare against
-        //Will be implemented later
-        byte [] buffer = null;
+        byte [] buffer = {0x41,0x00,0x01,0x00};
         Packet packet = new Packet(buffer);
 
-        assertArrayEquals(packet.encode(),buffer);
+        assertArrayEquals(buffer,packet.encode());
     }
 
     /**
@@ -262,6 +262,7 @@ public class packetTest {
      */
     @Test
     public void addAddressSuccess() throws Exception {
+        Set<InetSocketAddress> addresses = new HashSet<>();
         PacketType pType = PacketType.AnswerRequest;
         ErrorType eType = ErrorType.None;
         int sessionTest = 3;
@@ -270,12 +271,13 @@ public class packetTest {
         InetAddress addr = InetAddress.getLocalHost();
         int port = 80;
         InetSocketAddress sockAddr = new InetSocketAddress(addr, port);
+        addresses.add(sockAddr);
         testPacket.addAddress(sockAddr);
-        assertEquals(testPacket.getAddrList(), sockAddr);
+        assertEquals(addresses, testPacket.getAddrList());
     }
 
     /**
-     * Tests for adAddress failure due to bad port
+     * Tests for addAddress failure due to bad port
      */
     @Test (expected = IllegalArgumentException.class)
     public void addAddressFailureBadPort() throws Exception {
@@ -354,7 +356,7 @@ public class packetTest {
         int port2 = 90;
         InetSocketAddress sockAddr = new InetSocketAddress(addr, port);
         InetSocketAddress sockAddr2 = new InetSocketAddress(addr, port2);
-        Set<InetSocketAddress> check = new HashSet<InetSocketAddress>();
+        Set<InetSocketAddress> check = new HashSet<>();
 
         check.add(sockAddr);
         check.add(sockAddr2);

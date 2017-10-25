@@ -7,21 +7,18 @@
  ************************************************/
 package mvn.serialization;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
-import java.util.Set;
+import java.util.*;
 
-/**
- * Created by Chris on 10/23/2017.
- */
+import static mvn.serialization.PacketType.*;
+
 public class Packet {
 
     private PacketType type;
     private ErrorType error;
     private int sessionID;
-    private Set<InetSocketAddress> addrList;
+    private Set<InetSocketAddress> addrList = new HashSet<>();
 
     /**
      * Construct new packet from byte array
@@ -30,20 +27,18 @@ public class Packet {
      * @throws IllegalArgumentException if bad attribute value
      */
     public Packet(byte [] buf) throws IOException, IllegalArgumentException{
-        ErrorType error = null;
-        PacketType type = null;
-        int sessionID = -1;
         if(buf == null){
             throw new IOException("Buffer is null");
         }
-        if(buf.length > 1562) {
+        if(buf.length > 1534) {
             throw new IOException("Buffer is too long");
         }
-        if(buf.length < 32) {
+        if(buf.length < 4) {
             throw new IOException("Buffer is too short");
         }
 
-        //get data from buffer
+        type = PacketType.getByCode((buf[0] & 0x0F));
+        error = ErrorType.getByCode(buf[1]);
 
         if(type == null){
             throw new IllegalArgumentException("Packet type is Invalid");
@@ -52,7 +47,7 @@ public class Packet {
             throw new IllegalArgumentException("Error type is Invalid");
         }
 
-
+        sessionID = buf[2];
     }
 
     /**
@@ -69,17 +64,37 @@ public class Packet {
             throw  new IllegalArgumentException("Invalid sessionID: Out of " +
                     "Range [0-255]");
         }
-
+        this.type = type;
+        this.error = error;
+        this.sessionID = sessionID;
     }
 
     /**
      * Return encoded message in byte array
      * @return encoded message byte array
      */
-    public byte[] encode(){
-        byte[] messageByteArray = null;
+    public byte[] encode() throws IOException {
+        byte[] messageByteArray = new byte[1534];
 
-        return messageByteArray;
+
+
+        List<Byte> bytes = new ArrayList<>();
+        bytes.add((byte)(this.getType().getCode() | 0x00000040));
+        bytes.add((byte)this.getError().getCode());
+        bytes.add((byte)this.getSessionID());
+        bytes.add((byte)addrList.size());
+
+        for (InetSocketAddress address:addrList) {
+            for (byte addressByte:address.getAddress().getAddress()){
+                bytes.add(addressByte);
+            }
+            bytes.add((byte)(address.getPort() >>> 8));
+            bytes.add((byte)address.getPort());
+        }
+        for (int i = 0; i < bytes.size();i++) {
+            messageByteArray[i] = bytes.get(i);
+        }
+        return Arrays.copyOf(messageByteArray,bytes.size());
     }
 
     /**
@@ -105,7 +120,10 @@ public class Packet {
      */
     public void setSessionID(int sessionID) throws IllegalArgumentException{
 
-        //check is session id is valid
+        if(sessionID < 0 || sessionID > 255){
+            throw  new IllegalArgumentException("Invalid sessionID: Out of " +
+                    "Range [0-255]");
+        }
 
         this.sessionID = sessionID;
     }
@@ -130,6 +148,18 @@ public class Packet {
     public void addAddress(InetSocketAddress newAddress)
             throws IllegalArgumentException{
         //check for Illegal Argument
+        if(newAddress == null){
+            throw new IllegalArgumentException("Address is Null");
+        }
+        if(this.getType() == RequestNodes || this.getType() == RequestMavens){
+            throw new IllegalArgumentException("This Maven packet does not" +
+                                               "allow address");
+        }
+        if(this.getAddrList().size() == 255){
+            throw new IllegalArgumentException("This maven packet has the " +
+                    "maximum amount of addresses stored");
+        }
+        this.addrList.add(newAddress);
     }
 
     /**
