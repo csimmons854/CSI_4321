@@ -5,10 +5,10 @@
  * Class: CSI 4321 Data Communications
  *
  ************************************************/
-package mvn.serialization.test;
+package mvn.test;
 
-import mvn.serialization.ErrorType;
 import mvn.serialization.Packet;
+import mvn.serialization.ErrorType;
 import mvn.serialization.PacketType;
 import org.junit.Test;
 
@@ -30,14 +30,29 @@ public class packetTest {
     @Test
     public void packetByteArrayConstructorSuccessTest() throws IOException,
             IllegalArgumentException {
-        byte [] buffer = {0x10,0x00,0x01,0x00};
+        int port1 = 3300;
+        int port2 = 3301;
+        int port3 = 3302;
+        byte firstHalf1 = (byte)(port1 >>> 8);
+        byte secondHalf1 = (byte)(port1);
+        byte firstHalf2 = (byte)(port2 >>> 8);
+        byte secondHalf2 = (byte)(port2);
+        byte firstHalf3 = (byte)(port3 >>> 8);
+        byte secondHalf3 = (byte)(port3);
 
-        PacketType type = RequestNodes;
+        byte [] buffer = {0x43,0x00,-1,0x03,127,0,0,1,firstHalf1,secondHalf1
+                                             ,127,0,0,2,firstHalf2,secondHalf2
+                                             ,127,0,0,3,firstHalf3,secondHalf3};
+
+        PacketType type = NodeAdditions;
         ErrorType error = None;
-        //Will build buffer later when I implement constructor
 
         Packet packet1 = new Packet(buffer);
-        Packet packet2 = new Packet(type,error,1);
+        Packet packet2 = new Packet(type,error,255);
+        packet2.addAddress(new InetSocketAddress("127.0.0.1",3300));
+        packet2.addAddress(new InetSocketAddress("127.0.0.2",3301));
+        packet2.addAddress(new InetSocketAddress("127.0.0.3",3302));
+
 
         assertEquals(packet2,packet1);
     }
@@ -141,10 +156,23 @@ public class packetTest {
     @Test
     public void encodeSuccessTest() throws Exception {
         //Buffer to compare against
-        byte [] buffer = {0x41,0x00,0x01,0x00};
-        Packet packet = new Packet(buffer);
+        int port1 = 3300;
+        int port2 = 3301;
+        int port3 = 3302;
+        byte firstHalf1 = (byte)(port1 >>> 8);
+        byte secondHalf1 = (byte)(port1);
+        byte firstHalf2 = (byte)(port2 >>> 8);
+        byte secondHalf2 = (byte)(port2);
+        byte firstHalf3 = (byte)(port3 >>> 8);
+        byte secondHalf3 = (byte)(port3);
 
-        assertArrayEquals(buffer,packet.encode());
+        byte [] buffer = {0x43,0x00,0x01,0x03,127,0,0,1,firstHalf1,secondHalf1
+                ,127,0,0,2,firstHalf2,secondHalf2
+                ,127,0,0,3,firstHalf3,secondHalf3};
+        Packet packet = new Packet(buffer);
+        Packet packet2 = new Packet(packet.encode());
+
+        assertEquals(packet2,packet);
     }
 
     /**

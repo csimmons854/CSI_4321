@@ -7,6 +7,8 @@
  ************************************************/
 package mvn.serialization;
 
+import java.io.IOException;
+
 public enum PacketType {
 	
 	/*
@@ -115,10 +117,10 @@ public enum PacketType {
 			packetType = MavenAdditions;
 		}
 		if(code == 5){
-			packetType = NodeAdditions;
+			packetType = NodeDeletions;
 		}
 		if(code == 6){
-			packetType = NodeDeletions;
+			packetType = MavenDeletions;
 		}
 
 		return packetType;
@@ -132,30 +134,31 @@ public enum PacketType {
 	 * 
 	 * @return cmd corresponding to code or null if bad cmd
 	 */
-	public static PacketType getByCmd(String cmd) {
-		PacketType packetType = null;
-
-		if (cmd.equals("RN")) {
-			packetType = RequestNodes;
-		}
-		if (cmd.equals("RM")) {
-			packetType = RequestMavens;
-		}
-		if (cmd.equals("AR")) {
-			packetType = AnswerRequest;
-		}
-		if (cmd.equals("NA")) {
-			packetType = NodeAdditions;
-		}
-		if (cmd.equals("MA")) {
-			packetType = MavenAdditions;
-		}
-		if (cmd.equals("NA")) {
-			packetType = NodeAdditions;
-		}
-		if (cmd.equals("ND")) {
-			packetType = NodeDeletions;
-		}
+	public static PacketType getByCmd(String cmd) throws IOException {
+        PacketType packetType = null;
+        if (cmd != null) {
+            if (cmd.equals("RN")) {
+                packetType = RequestNodes;
+            }
+            if (cmd.equals("RM")) {
+                packetType = RequestMavens;
+            }
+            if (cmd.equals("AR")) {
+                packetType = AnswerRequest;
+            }
+            if (cmd.equals("NA")) {
+                packetType = NodeAdditions;
+            }
+            if (cmd.equals("MA")) {
+                packetType = MavenAdditions;
+            }
+            if (cmd.equals("MD")) {
+                packetType = MavenDeletions;
+            }
+            if (cmd.equals("ND")) {
+                packetType = NodeDeletions;
+            }
+        }
 
 		return packetType;
 	}

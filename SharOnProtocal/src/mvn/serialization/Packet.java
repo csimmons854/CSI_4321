@@ -8,9 +8,11 @@
 package mvn.serialization;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.*;
 
+import static mvn.serialization.ErrorType.*;
 import static mvn.serialization.PacketType.*;
 
 public class Packet {
@@ -36,9 +38,30 @@ public class Packet {
         if(buf.length < 4) {
             throw new IOException("Buffer is too short");
         }
-
+        if(buf[0] >> 4 != 4){
+            throw new IllegalArgumentException("Invalid Version Number: " +
+                    (buf[0] >> 4));
+        }
         type = PacketType.getByCode((buf[0] & 0x0F));
         error = ErrorType.getByCode(buf[1]);
+        int count = buf[3] & 0x000000FF;
+
+        if(type != AnswerRequest && error != None){
+            throw new IllegalArgumentException("Invalid Packet Type and Error " +
+                    "Type combination\n Note: Only Answer Request Packets " +
+                    "can have Error Types other than None");
+        }
+
+        if((type == RequestMavens || type == RequestNodes) && count > 0){
+            throw new IllegalArgumentException("Invalid Type/count\n Request" +
+                    "Mavens and RequestNodes cannot have addresses stored");
+        }
+        
+
+        if(count*6 != buf.length - 4){
+            throw new IOException("Count and number of Addresses" +
+                                               " mismatch");
+        }
 
         if(type == null){
             throw new IllegalArgumentException("Packet type is Invalid");
@@ -46,8 +69,18 @@ public class Packet {
         if(error == null){
             throw new IllegalArgumentException("Error type is Invalid");
         }
+        for(int i = 0; i < count; i++){
+            InetAddress address;
+            int start = 4 + i*6;
+            address = InetAddress.getByAddress(Arrays.copyOfRange(buf,start,start + 4));
+            int firstHalf = (buf[start + 4] & 0xff) << 8;
+            int secondHalf = buf[start+ 5] & 0xFF;
+            int port = firstHalf | secondHalf;
+            InetSocketAddress socketAddress = new InetSocketAddress(address,port);
+            addrList.add(socketAddress);
+        }
 
-        sessionID = buf[2];
+        sessionID = buf[2] & 0x000000FF;
     }
 
     /**
@@ -61,9 +94,23 @@ public class Packet {
     public Packet(PacketType type, ErrorType error, int sessionID) throws
              IllegalArgumentException{
         if(sessionID < 0 || sessionID > 255){
-            throw  new IllegalArgumentException("Invalid sessionID: Out of " +
+            throw new IllegalArgumentException("Invalid sessionID: Out of " +
                     "Range [0-255]");
         }
+        if(type != AnswerRequest && error != None){
+            throw new IllegalArgumentException("Invalid Packet Type and Error " +
+                    "Type combination\n Note: Only Answer Request Packets " +
+                    "can have Error Types other than None");
+        }
+
+        if(type == null){
+            throw new IllegalArgumentException("Packet type is Invalid");
+        }
+
+        if(error == null){
+            throw new IllegalArgumentException("Error type is Invalid");
+        }
+
         this.type = type;
         this.error = error;
         this.sessionID = sessionID;
@@ -166,8 +213,8 @@ public class Packet {
      * Get list of addresses
      * @return list of addresses
      */
-    public Set<InetSocketAddress> getAddrList(){
-        return addrList;
+    public Set getAddrList(){
+        return new HashSet<>(addrList);
     }
 
     /**
@@ -180,6 +227,7 @@ public class Packet {
                 "type=" + type +
                 ", error=" + error +
                 ", sessionID=" + sessionID +
+                ", addrList=" + addrList +
                 '}';
     }
 
