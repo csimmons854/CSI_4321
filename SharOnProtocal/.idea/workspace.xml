@@ -23,7 +23,7 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.6401919">
+    <splitter split-orientation="horizontal" split-proportion="0.41614583">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="Result.java" pinned="false" current-in-tab="false">
@@ -33,6 +33,8 @@
                   <caret line="45" column="63" lean-forward="false" selection-start-line="45" selection-start-column="44" selection-end-line="45" selection-end-column="63" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
+                    <element signature="e#3862#3863#0" expanded="false" />
+                    <element signature="e#3927#3928#0" expanded="false" />
                     <element signature="e#4033#4034#0" expanded="false" />
                     <element signature="e#4062#4063#0" expanded="false" />
                     <element signature="e#4849#4850#0" expanded="false" />
@@ -49,7 +51,7 @@
           <file leaf-file-name="Message.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/sharon/serialization/Message.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="7191">
+                <state relative-caret-position="7140">
                   <caret line="442" column="38" lean-forward="false" selection-start-line="442" selection-start-column="38" selection-end-line="442" selection-end-column="38" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
@@ -62,6 +64,8 @@
                     <element signature="e#8772#8773#0" expanded="false" />
                     <element signature="e#9679#9680#0" expanded="false" />
                     <element signature="e#9720#9721#0" expanded="false" />
+                    <element signature="e#10522#10523#0" expanded="false" />
+                    <element signature="e#10568#10569#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -70,11 +74,9 @@
           <file leaf-file-name="ErrorType.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/mvn/serialization/ErrorType.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="204">
+                <state relative-caret-position="102">
                   <caret line="12" column="12" lean-forward="false" selection-start-line="12" selection-start-column="12" selection-end-line="12" selection-end-column="12" />
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                  </folding>
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -82,11 +84,9 @@
           <file leaf-file-name="PacketType.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/mvn/serialization/PacketType.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="136">
+                <state relative-caret-position="85">
                   <caret line="11" column="12" lean-forward="false" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                  </folding>
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -94,8 +94,8 @@
           <file leaf-file-name="Client.java" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/mvn/app/Client.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1280">
-                  <caret line="53" column="21" lean-forward="true" selection-start-line="53" selection-start-column="21" selection-end-line="53" selection-end-column="21" />
+                <state relative-caret-position="147">
+                  <caret line="118" column="12" lean-forward="false" selection-start-line="118" selection-start-column="12" selection-end-line="118" selection-end-column="12" />
                   <folding>
                     <element signature="imports" expanded="true" />
                   </folding>
@@ -120,11 +120,11 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="Packet.java" pinned="false" current-in-tab="false">
+          <file leaf-file-name="Packet.java" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/mvn/serialization/Packet.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="408">
-                  <caret line="69" column="29" lean-forward="false" selection-start-line="69" selection-start-column="29" selection-end-line="69" selection-end-column="29" />
+                <state relative-caret-position="282">
+                  <caret line="200" column="42" lean-forward="false" selection-start-line="200" selection-start-column="42" selection-end-line="200" selection-end-column="42" />
                   <folding>
                     <element signature="n#!!doc" expanded="true" />
                     <element signature="imports" expanded="true" />
@@ -138,19 +138,16 @@
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="527">
                   <caret line="50" column="50" lean-forward="false" selection-start-line="50" selection-start-column="50" selection-end-line="50" selection-end-column="50" />
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                    <element signature="imports" expanded="true" />
-                  </folding>
+                  <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="node.java" pinned="false" current-in-tab="true">
+          <file leaf-file-name="node.java" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/sharon/app/node.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1997">
-                  <caret line="313" column="23" lean-forward="false" selection-start-line="313" selection-start-column="17" selection-end-line="313" selection-end-column="23" />
+                <state relative-caret-position="1092">
+                  <caret line="287" column="17" lean-forward="true" selection-start-line="287" selection-start-column="17" selection-end-line="287" selection-end-column="17" />
                   <folding />
                 </state>
               </provider>
@@ -212,9 +209,9 @@
         <option value="$PROJECT_DIR$/src/sharon/serialization/SharOn/serialization/test/mvn/serialization/test.java" />
         <option value="$PROJECT_DIR$/src/mvn/serialization/test/packetTest.java" />
         <option value="$PROJECT_DIR$/src/mvn/PacketType.java" />
-        <option value="$PROJECT_DIR$/src/mvn/serialization/Packet.java" />
         <option value="$PROJECT_DIR$/src/mvn/serialization/ErrorType.java" />
         <option value="$PROJECT_DIR$/src/mvn/serialization/PacketType.java" />
+        <option value="$PROJECT_DIR$/src/mvn/serialization/Packet.java" />
         <option value="$PROJECT_DIR$/src/mvn/app/Client.java" />
       </list>
     </option>
@@ -232,7 +229,7 @@
     <option name="x" value="-8" />
     <option name="y" value="-8" />
     <option name="width" value="1936" />
-    <option name="height" value="1096" />
+    <option name="height" value="1176" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -762,13 +759,6 @@
       <envs />
       <method />
     </configuration>
-    <configuration default="true" type="JavaScriptTestRunnerJest" factoryName="Jest">
-      <node-interpreter value="project" />
-      <working-dir value="" />
-      <envs />
-      <scope-kind value="ALL" />
-      <method />
-    </configuration>
     <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
       <config-file value="" />
       <node-interpreter value="project" />
@@ -801,9 +791,6 @@
       <option name="workingDirectory" />
       <option name="isAlternativeJrePathEnabled" value="false" />
       <envs />
-      <method />
-    </configuration>
-    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" path-to-node="project" working-dir="">
       <method />
     </configuration>
     <configuration default="true" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
@@ -854,19 +841,6 @@
       <scripts />
       <node-interpreter value="project" />
       <envs />
-      <method />
-    </configuration>
-    <configuration default="true" type="mocha-javascript-test-runner" factoryName="Mocha">
-      <node-interpreter>project</node-interpreter>
-      <node-options />
-      <working-directory />
-      <pass-parent-env>true</pass-parent-env>
-      <envs />
-      <ui />
-      <extra-mocha-options />
-      <test-kind>DIRECTORY</test-kind>
-      <test-directory />
-      <recursive>false</recursive>
       <method />
     </configuration>
     <configuration default="true" type="osgi.bnd.run" factoryName="Run Launcher">
@@ -939,6 +913,7 @@
       <workItem from="1508980365436" duration="5999000" />
       <workItem from="1509225656584" duration="3241000" />
       <workItem from="1509498720901" duration="7776000" />
+      <workItem from="1509549643220" duration="2447000" />
     </task>
     <servers />
   </component>
@@ -975,7 +950,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="223345000" />
+    <option name="totallyTimeSpent" value="225792000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -987,7 +962,8 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32987553" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -999,7 +975,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980332" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32157677" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29737335" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Properties" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1080,6 +1056,8 @@
             <element signature="e#8772#8773#0" expanded="false" />
             <element signature="e#9679#9680#0" expanded="false" />
             <element signature="e#9720#9721#0" expanded="false" />
+            <element signature="e#10522#10523#0" expanded="false" />
+            <element signature="e#10568#10569#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1095,7 +1073,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
           <caret line="7" column="0" lean-forward="true" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1133,6 +1110,8 @@
           <caret line="135" column="7" lean-forward="true" selection-start-line="135" selection-start-column="7" selection-end-line="135" selection-end-column="7" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
+            <element signature="e#3862#3863#0" expanded="false" />
+            <element signature="e#3927#3928#0" expanded="false" />
             <element signature="e#4033#4034#0" expanded="false" />
             <element signature="e#4062#4063#0" expanded="false" />
             <element signature="e#4849#4850#0" expanded="false" />
@@ -1186,6 +1165,8 @@
           <caret line="217" column="53" lean-forward="false" selection-start-line="217" selection-start-column="53" selection-end-line="217" selection-end-column="53" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
+            <element signature="e#3862#3863#0" expanded="false" />
+            <element signature="e#3927#3928#0" expanded="false" />
             <element signature="e#4033#4034#0" expanded="false" />
             <element signature="e#4062#4063#0" expanded="false" />
             <element signature="e#4849#4850#0" expanded="false" />
@@ -1232,6 +1213,8 @@
           <caret line="16" column="41" lean-forward="false" selection-start-line="16" selection-start-column="41" selection-end-line="16" selection-end-column="41" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
+            <element signature="e#3862#3863#0" expanded="false" />
+            <element signature="e#3927#3928#0" expanded="false" />
             <element signature="e#4033#4034#0" expanded="false" />
             <element signature="e#4062#4063#0" expanded="false" />
             <element signature="e#4849#4850#0" expanded="false" />
@@ -1252,13 +1235,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/lang/Object.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="234" column="18" lean-forward="false" selection-start-line="234" selection-start-column="18" selection-end-line="234" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/lang/Object.java" />
     <entry file="file://$PROJECT_DIR$/SharOnProtocal.iml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1273,13 +1250,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/io/FilenameFilter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="51" column="12" lean-forward="false" selection-start-line="51" selection-start-column="12" selection-end-line="51" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/io/FilenameFilter.java" />
     <entry file="file://$PROJECT_DIR$/src/sharon/app/Connection.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="867">
@@ -1321,6 +1292,8 @@
           <caret line="45" column="63" lean-forward="false" selection-start-line="45" selection-start-column="44" selection-end-line="45" selection-end-column="63" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
+            <element signature="e#3862#3863#0" expanded="false" />
+            <element signature="e#3927#3928#0" expanded="false" />
             <element signature="e#4033#4034#0" expanded="false" />
             <element signature="e#4062#4063#0" expanded="false" />
             <element signature="e#4849#4850#0" expanded="false" />
@@ -1333,13 +1306,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/lang/Thread.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="744" column="0" lean-forward="false" selection-start-line="744" selection-start-column="0" selection-end-line="744" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/lang/Thread.java" />
     <entry file="file://$PROJECT_DIR$/src/sharon/serialization/Response.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="595">
@@ -1347,13 +1314,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/net/InetSocketAddress.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="879">
-          <caret line="187" column="0" lean-forward="false" selection-start-line="187" selection-start-column="0" selection-end-line="187" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/net/InetSocketAddress.java" />
     <entry file="file://$PROJECT_DIR$/src/sharon/serialization/MessageOutput.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="879">
@@ -1363,7 +1324,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/sharon/serialization/Message.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7191">
+        <state relative-caret-position="7140">
           <caret line="442" column="38" lean-forward="false" selection-start-line="442" selection-start-column="38" selection-end-line="442" selection-end-column="38" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
@@ -1376,6 +1337,8 @@
             <element signature="e#8772#8773#0" expanded="false" />
             <element signature="e#9679#9680#0" expanded="false" />
             <element signature="e#9720#9721#0" expanded="false" />
+            <element signature="e#10522#10523#0" expanded="false" />
+            <element signature="e#10568#10569#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1409,30 +1372,23 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="527">
           <caret line="50" column="50" lean-forward="false" selection-start-line="50" selection-start-column="50" selection-end-line="50" selection-end-column="50" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="imports" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/mvn/serialization/ErrorType.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
+        <state relative-caret-position="102">
           <caret line="12" column="12" lean-forward="false" selection-start-line="12" selection-start-column="12" selection-end-line="12" selection-end-column="12" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/mvn/serialization/PacketType.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
+        <state relative-caret-position="85">
           <caret line="11" column="12" lean-forward="false" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1440,22 +1396,22 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="493">
           <caret line="29" column="4" lean-forward="false" selection-start-line="29" selection-start-column="4" selection-end-line="29" selection-end-column="4" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/lang/NumberFormatException.java">
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/lang/NumberFormatException.java" />
+    <entry file="file://$PROJECT_DIR$/src/sharon/app/node.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="64" column="0" lean-forward="false" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+        <state relative-caret-position="1092">
+          <caret line="287" column="17" lean-forward="true" selection-start-line="287" selection-start-column="17" selection-end-line="287" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/mvn/serialization/Packet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="69" column="29" lean-forward="false" selection-start-line="69" selection-start-column="29" selection-end-line="69" selection-end-column="29" />
+        <state relative-caret-position="282">
+          <caret line="200" column="42" lean-forward="false" selection-start-line="200" selection-start-column="42" selection-end-line="200" selection-end-column="42" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="imports" expanded="true" />
@@ -1463,18 +1419,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/sharon/app/node.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1997">
-          <caret line="313" column="23" lean-forward="false" selection-start-line="313" selection-start-column="17" selection-end-line="313" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/mvn/app/Client.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1280">
-          <caret line="53" column="21" lean-forward="true" selection-start-line="53" selection-start-column="21" selection-end-line="53" selection-end-column="21" />
+        <state relative-caret-position="147">
+          <caret line="118" column="12" lean-forward="false" selection-start-line="118" selection-start-column="12" selection-end-line="118" selection-end-column="12" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -1536,6 +1484,18 @@
       <state key="ModuleStructureConfigurable.UI">
         <settings>
           <last-edited>SharOnProtocal</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectJDKs.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

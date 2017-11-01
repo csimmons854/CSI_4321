@@ -198,6 +198,9 @@ public class Packet {
         if(newAddress == null){
             throw new IllegalArgumentException("Address is Null");
         }
+        if(newAddress.getAddress() == null){
+            throw new IllegalArgumentException("Bad Address");
+        }
         if(this.getType() == RequestNodes || this.getType() == RequestMavens){
             throw new IllegalArgumentException("This Maven packet does not" +
                                                "allow address");
