@@ -1,8 +1,13 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 5
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package mvn.app;
 
 import mvn.serialization.*;
-import sharon.app.Connection;
-import sharon.serialization.Message;
 
 import java.io.IOException;
 import java.net.*;
@@ -94,8 +99,49 @@ public class Client {
                 if (packet != null) {
                     byte[] packetByteArray = packet.encode();
                     udpPacket = new DatagramPacket(packetByteArray, packetByteArray.length, serverAddress, serverPort);
-                    Sender newSender = new Sender(socket, udpPacket, packet.getSessionID());
-                    newSender.start();
+                    int attempts = 0;
+                    Boolean receivedFlag = false;
+                    Packet newPacket = null;
+                    if(!(packet.getType() == PacketType.RequestMavens || packet.getType() == PacketType.RequestNodes)){
+                        socket.send(udpPacket);
+                    }
+                    else {
+                        try {
+                            while (attempts < 3 && !receivedFlag) {
+                                socket.setSoTimeout(3000);
+                                socket.send(udpPacket);
+                                byte[] buffer = new byte[1534];
+                                DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
+                                try {
+                                    socket.receive(responsePacket);
+                                    try {
+                                        newPacket = new Packet(Arrays.copyOf(responsePacket.getData(), responsePacket.getLength()));
+                                        if (newPacket.getType() != PacketType.AnswerRequest) {
+                                            System.err.println("Unexpected Packet Type");
+                                        } else if (newPacket.getSessionID() == sessionID || sessionID == 0) {
+                                            receivedFlag = true;
+                                            System.out.println(newPacket);
+                                        } else if (newPacket.getSessionID() != sessionID) {
+                                            System.err.println("Unexpected Session ID: Expected: "
+                                                    + sessionID + " Received: " + newPacket.getSessionID());
+                                        }
+                                    } catch (IllegalArgumentException e) {
+                                        System.err.println("Invalid Message: " + e.getMessage());
+                                    } catch (IOException e) {
+                                        System.err.println("Communication problem: " + e.getMessage());
+                                    }
+                                } catch (SocketTimeoutException e) {
+                                    attempts++;
+                                }
+                            }
+                            if (!receivedFlag && newPacket.getType() == PacketType.RequestMavens ||
+                                    newPacket.getType() == PacketType.RequestNodes) {
+                                System.err.println("No Response from Server");
+                            }
+                        } catch (IOException e) {
+                            System.err.println(e.getMessage());
+                        }
+                    }
                 }
             }catch(Exception e){
                 System.err.println(e.getMessage());
@@ -103,76 +149,7 @@ public class Client {
         }
     }
 
-    static class Sender implements Runnable {
-        private Thread t;
-        private DatagramSocket socket;
-        private DatagramPacket packet;
-        private int sessionID;
 
-        Sender(DatagramSocket socket, DatagramPacket packet, int sessionID) {
-            this.socket = socket;
-            this.packet = packet;
-            this.sessionID = sessionID;
-        }
-
-        public void run() {
-            try {
-                int attempts = 0;
-                Boolean receivedFlag = false;
-                Packet newPacket = null;
-                while(attempts < 3 && !receivedFlag) {
-                    socket.setSoTimeout(3000);
-                    socket.send(packet);
-                    byte[] buffer = new byte[1534];
-                    DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
-                    try {
-                        socket.receive(responsePacket);
-                        System.out.println(Arrays.toString(responsePacket.getData()));
-                        System.out.println(responsePacket.getLength());
-                        try {
-                            newPacket = new Packet(Arrays.copyOf(responsePacket.getData(),responsePacket.getLength()));
-                            if(newPacket.getType() != PacketType.AnswerRequest){
-                                System.err.println("Unexpected Packet Type");
-                                attempts++;
-                            }
-                            else if(newPacket.getSessionID() == sessionID || sessionID == 0){
-                                receivedFlag = true;
-                                System.out.println(newPacket);
-                            }
-                            else if(newPacket.getSessionID() != sessionID){
-                                System.err.println("Unexpected Session ID: Expected: "
-                                        + sessionID + " Received: " + newPacket.getSessionID());
-                                attempts++;
-                            }
-                        }catch (IllegalArgumentException e){
-                            System.err.println("Invalid Message: " + e.getMessage());
-                            attempts++;
-                        }catch (IOException e){
-                            System.err.println("Communication problem: " + e.getMessage());
-                            attempts++;
-                        }
-                    }catch (SocketTimeoutException e) {
-                        attempts++;
-                    }
-                }
-                if(!receivedFlag && newPacket.getType() == PacketType.RequestMavens ||
-                        newPacket.getType() == PacketType.RequestNodes){
-                    System.err.println("No Response from Server");
-                }
-
-            } catch (IOException e) {
-
-            }
-        }
-
-        public void start() {
-            if (t == null) {
-                t = new Thread(this);
-                t.start();
-            }
-
-        }
-    }
 
     public static InetSocketAddress createAddress(String address){
         StringTokenizer addressTokenizer = new StringTokenizer(address);
