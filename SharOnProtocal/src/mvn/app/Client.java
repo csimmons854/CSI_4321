@@ -34,12 +34,13 @@ public class Client {
         String cmdType = null;
         Packet packet;
         int sessionID;
+        Boolean IOExceptionFlag = false;
         Random r = new Random();
         DatagramSocket socket = new DatagramSocket();
         DatagramPacket udpPacket;
 
         //Continue prompting user till command is exit
-        while (!command.equals("exit")) {
+        while (!command.equals("exit") && !IOExceptionFlag) {
             try {
                 packet = null;
                 //prompt user
@@ -60,11 +61,11 @@ public class Client {
                     packet = new Packet(PacketType.RequestNodes, ErrorType.None, sessionID);
                 }
                 //if command is RM send a RequestMavens Packet
-                if (cmdType.equals("RM")) {
+                else if (cmdType.equals("RM")) {
                     packet = new Packet(PacketType.RequestMavens, ErrorType.None, sessionID);
                 }
                 //if command is NA send a NodeAdditions Packet
-                if (cmdType.equals("NA")) {
+                else if (cmdType.equals("NA")) {
                     //check for valid arguments
                     if (commandTokenizer.hasMoreTokens()) {
                         packet = new Packet(PacketType.NodeAdditions, ErrorType.None, sessionID);
@@ -76,7 +77,7 @@ public class Client {
                     }
                 }
                 //if command is MA send a MavenAdditions Packet
-                if (cmdType.equals("MA")) {
+                else if (cmdType.equals("MA")) {
                     //check for valid arguments
                     if (commandTokenizer.hasMoreTokens()) {
                         packet = new Packet(PacketType.MavenAdditions, ErrorType.None, sessionID);
@@ -88,7 +89,7 @@ public class Client {
                     }
                 }
                 //if command is ND send a NodeDeletions Packet
-                if (cmdType.equals("ND")) {
+                else if (cmdType.equals("ND")) {
                     //check for valid arguments
                     if (commandTokenizer.hasMoreTokens()) {
                         packet = new Packet(PacketType.NodeDeletions, ErrorType.None, sessionID);
@@ -100,7 +101,7 @@ public class Client {
                     }
                 }
                 //if command is MD send a MavenDeletions Packet
-                if (cmdType.equals("MD")) {
+                else if (cmdType.equals("MD")) {
                     //check for valid arguments
                     if (commandTokenizer.hasMoreTokens()) {
                         packet = new Packet(PacketType.MavenDeletions, ErrorType.None, sessionID);
@@ -110,6 +111,9 @@ public class Client {
                     } else {
                         System.err.println("MD Command Expects at least one argument");
                     }
+                }
+                else if (!cmdType.equals("exit")){
+                    System.err.println("Invalid Command");
                 }
 
                 //if a packet was created send it
@@ -125,9 +129,8 @@ public class Client {
                     socket.send(udpPacket);
                     if((packet.getType() == PacketType.RequestMavens || packet.getType() == PacketType.RequestNodes)){
                         try {
-                            while (attempts < 3 && !receivedFlag) {
+                            while (attempts < 3 && !receivedFlag && !IOExceptionFlag) {
                                 socket.setSoTimeout(3000);
-                                socket.send(udpPacket);
                                 byte[] buffer = new byte[1534];
                                 DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
                                 try {
@@ -147,12 +150,15 @@ public class Client {
                                         System.err.println("Invalid Message: " + e.getMessage());
                                     } catch (IOException e) {
                                         System.err.println("Communication problem: " + e.getMessage());
+                                        IOExceptionFlag = true;
                                     }
                                 } catch (SocketTimeoutException e) {
                                     attempts++;
+                                    socket.send(udpPacket);
+                                    System.err.println("Retransmitting");
                                 }
                             }
-                            if (!receivedFlag && (packet.getType() == PacketType.RequestMavens ||
+                            if (!receivedFlag && !IOExceptionFlag && (packet.getType() == PacketType.RequestMavens ||
                                     packet.getType() == PacketType.RequestNodes)) {
                                 System.err.println("No Response from Server");
                             }
@@ -165,6 +171,7 @@ public class Client {
                 System.err.println(e.getMessage());
             }
         }
+        System.out.println("Terminating Client");
     }
 
 
