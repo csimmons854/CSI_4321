@@ -213,6 +213,23 @@ public class Packet {
     }
 
     /**
+     * Deletes an address from the list
+     * @param address address to remove
+     * @throws IllegalArgumentException if the address is invalid throw exception
+     */
+    public void delAddress(InetSocketAddress address)
+            throws IllegalArgumentException{
+        //check for Illegal Argument
+        if(address == null){
+            throw new IllegalArgumentException("Address is Null");
+        }
+        if(address.getAddress() == null){
+            throw new IllegalArgumentException("Bad Address");
+        }
+        this.addrList.remove(address);
+    }
+
+    /**
      * Get list of addresses
      * @return list of addresses
      */
