@@ -137,7 +137,7 @@ public class Server {
                     } else {
                         responseMavenPacket.setSessionID(receivedPacket.getSessionID());
                         serverSocket.send(new DatagramPacket(responseMavenPacket.encode(),
-                                responseNodePacket.encode().length,
+                                responseMavenPacket.encode().length,
                                 packetAddress, packetPort));
                     }
 
