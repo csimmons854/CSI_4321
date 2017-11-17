@@ -62,6 +62,7 @@ public class node implements Runnable{
      * @throws BadAttributeValueException if a bad value was attempted to be inputed
      */
     public static void main(String [] args) throws IOException, BadAttributeValueException {
+        System.out.println("Node v1.02");
         if ((args.length < 3) ) { // Test for correct # of args
             throw new IllegalArgumentException("Parameter(s): <Port> <Directory> <Download Port>");
         }
@@ -73,7 +74,7 @@ public class node implements Runnable{
         dir = args[1];
 
         FileHandler fh;
-        fh = new FileHandler("C:\\test\\SharOnProtocol.log");
+        fh = new FileHandler("SharOnProtocol.log");
         log.addHandler(fh);
         fh.setFormatter(new SimpleFormatter());
         log.setUseParentHandlers(false);
@@ -367,10 +368,17 @@ public class node implements Runnable{
                             newConnection.getOutData().writeByteArray("OK SharOn\n\n".getBytes("ASCII"));
                             connections.add(newConnection);
                             log.info("Connection Established too: " + newConnection.getClientSocket().getInetAddress());
+                            System.out.println("opened");
                             Listener newListener = new Listener(newConnection, searchMap, dir, port);
                             newListener.start();
                         } else {
                             newConnection.getOutData().writeByteArray("REJECT 300 Bad Handshake\n\n".getBytes());
+                            log.warning("Rejected Connection to: " + newConnection.getClientSocket().getInetAddress() +
+                                    " <Bad Handshake>");
+                            System.out.println("closed");
+                            newConnection.getClientSocket().close();
+                            neighborNodeConnection.close();
+                            connections.remove(newConnection);
                         }
                     }
                 }
@@ -411,10 +419,22 @@ public class node implements Runnable{
 
         public void run() {
             List<Result> resultList;
+            Boolean killThread = false;
+            int j = 5;
             try {
                 synchronized (inData) {
-                    while (true) {
-                        msg = decode(inData);
+                    while (!killThread) {
+                        msg = null;
+                        try{
+                            msg = decode(inData);
+                        }catch (SocketException e){
+                            if(j > 0){
+                                System.err.println("Error at " + connection.getClientSocket().getInetAddress() +": " + e.getMessage());
+                                e.printStackTrace();
+                            }
+                            killThread = true;
+                        }
+
                         if (msg instanceof Search) {
                             Response outResponse =
                                 new Response(msg.getID(),msg.getTtl(),msg.getRoutingService(),

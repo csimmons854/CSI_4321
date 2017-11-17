@@ -41,7 +41,6 @@ public class Search extends Message {
         {
             searchString = temp;
         }
-
 	}
 		              
 	/**

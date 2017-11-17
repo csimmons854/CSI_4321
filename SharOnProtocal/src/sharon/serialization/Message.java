@@ -29,21 +29,21 @@ public abstract class Message {
             throw new IOException("Null Value");
         }
 	    this.setID(in.getByteArray(15));
+	    System.out.println(Arrays.toString(this.getID()));
 
         int tempTtl = in.getByte();
-
         //convert to unsigned long
         if(tempTtl < 0)
         {
             tempTtl = tempTtl & 0x000000FF;
         }
         this.setTtl(tempTtl);
-
         this.setRoutingService(RoutingService.getRoutingService(in.getByte()));
+
         this.setSourceAddress(in.getByteArray(5));
         this.setDestinationAddress(in.getByteArray(5));
 
-	}
+    }
 	
 	/**
 	 * Constructs a Message
@@ -216,6 +216,7 @@ public abstract class Message {
 
         //get type of message
         type = in.getByte();
+
 
         if(type == 1) //decode Search Message
         {

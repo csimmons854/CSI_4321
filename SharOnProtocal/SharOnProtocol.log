@@ -1,56 +1,20 @@
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=193, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=NodeAdditions, error=None, sessionID=49, addrList=[/1.1.1.1:1]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=194, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=NodeAdditions, error=None, sessionID=27, addrList=[/255.255.255.255:64000]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=195, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=NodeAdditions, error=None, sessionID=50, addrList=[/1.1.1.1:1]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=196, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=NodeDeletions, error=None, sessionID=131, addrList=[/255.255.255.255:64000]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=197, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=NodeDeletions, error=None, sessionID=51, addrList=[/1.1.1.1:2]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=198, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=NodeDeletions, error=None, sessionID=82, addrList=[/1.1.1.1:1]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=53, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=NodeAdditions, error=None, sessionID=199, addrList=[/2.2.2.2:2, /5.5.5.5:5]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=161, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestMavens, error=None, sessionID=118, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=MavenDeletions, error=None, sessionID=119, addrList=[/1.1.1.1:1]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestMavens, error=None, sessionID=119, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=MavenAdditions, error=None, sessionID=19, addrList=[/3.3.3.3:3]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=MavenAdditions, error=None, sessionID=248, addrList=[/4.4.4.4:4]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestMavens, error=None, sessionID=51, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=MavenDeletions, error=None, sessionID=78, addrList=[/3.3.3.3:3]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestMavens, error=None, sessionID=106, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=177, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-WARNING: Unexpected Message Type: Packet{type=AnswerRequest, error=None, sessionID=223, addrList=[/3.3.3.3:3]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-INFO: Received: Packet{type=RequestNodes, error=None, sessionID=255, addrList=[]}
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-WARNING: Invalid Message: Invalid Version Number: 7
-Nov 14, 2017 1:18:24 PM mvn.app.Server main
-WARNING: Communication problem: Buffer is too short
+Nov 17, 2017 5:42:46 PM sharon.app.node$IncomingConnections run
+WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
+Nov 17, 2017 5:42:46 PM sharon.app.node$IncomingConnections run
+INFO: Connection Established too: /127.0.0.1
+Nov 17, 2017 5:47:01 PM sharon.app.node$IncomingConnections run
+WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
+Nov 17, 2017 5:47:01 PM sharon.app.node$IncomingConnections run
+INFO: Connection Established too: /127.0.0.1
+Nov 17, 2017 5:47:47 PM sharon.app.node$IncomingConnections run
+WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
+Nov 17, 2017 5:47:47 PM sharon.app.node$IncomingConnections run
+INFO: Connection Established too: /127.0.0.1
+Nov 17, 2017 5:48:35 PM sharon.app.node$IncomingConnections run
+WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
+Nov 17, 2017 5:48:35 PM sharon.app.node$IncomingConnections run
+INFO: Connection Established too: /127.0.0.1
+Nov 17, 2017 5:48:55 PM sharon.app.node$IncomingConnections run
+WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
+Nov 17, 2017 5:48:55 PM sharon.app.node$IncomingConnections run
+INFO: Connection Established too: /127.0.0.1
