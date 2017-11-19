@@ -397,6 +397,8 @@ public class node implements Runnable{
     }
 
     static class Listener implements Runnable {
+        private final byte [] srcAddress = {(byte) 0x00, (byte) 0x00, (byte) 0x00,(byte) 0x00, (byte) 0x00};
+        private final byte [] destAddress = {(byte) 0x00, (byte) 0x00, (byte) 0x00,(byte) 0x00, (byte) 0x00};
         private Thread t;
         private Message msg;
         private MessageInput inData;
@@ -428,17 +430,15 @@ public class node implements Runnable{
                         try{
                             msg = decode(inData);
                         }catch (SocketException e){
-                            if(j > 0){
-                                System.err.println("Error at " + connection.getClientSocket().getInetAddress() +": " + e.getMessage());
-                                e.printStackTrace();
-                            }
+                                //System.err.println("Error at " + connection.getClientSocket().getInetAddress() +": " + e.getMessage());
+                                //e.printStackTrace();
                             killThread = true;
                         }
 
                         if (msg instanceof Search) {
                             Response outResponse =
                                 new Response(msg.getID(),msg.getTtl(),msg.getRoutingService(),
-                                             msg.getSourceAddress(),msg.getDestinationAddress(),
+                                             srcAddress,destAddress,
                                              new InetSocketAddress(InetAddress.getLocalHost(),port));
 
                             File dir = new File(directory);
