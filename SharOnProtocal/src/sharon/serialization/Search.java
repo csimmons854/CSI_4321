@@ -29,9 +29,9 @@ public class Search extends Message {
         int payload = 0x0000FFFF;
 
         String temp;
+
 		payload = payload & in.getShort();
 		temp = in.getString();
-
 
 		if(temp.length() != payload - 1)
 		{

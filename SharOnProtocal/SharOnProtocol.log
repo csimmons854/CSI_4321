@@ -1,6 +1,6 @@
-Nov 18, 2017 7:12:27 PM sharon.app.node main
-INFO: Connection Established too: and/129.62.148.4
-Nov 18, 2017 7:43:29 PM sharon.app.node$IncomingConnections run
+Nov 19, 2017 12:14:50 PM sharon.app.node$IncomingConnections run
 WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 18, 2017 7:43:29 PM sharon.app.node$IncomingConnections run
+Nov 19, 2017 12:14:50 PM sharon.app.node$IncomingConnections run
 INFO: Connection Established too: /127.0.0.1
+Nov 19, 2017 12:14:50 PM sharon.app.node$Listener run
+WARNING: [37, 37, -49, -120, 34, -114, -90, -15, 56, 52, -72, 6, -8, -14, -32] 1���t 2

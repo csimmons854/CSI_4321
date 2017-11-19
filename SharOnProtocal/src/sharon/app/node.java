@@ -368,14 +368,12 @@ public class node implements Runnable{
                             newConnection.getOutData().writeByteArray("OK SharOn\n\n".getBytes("ASCII"));
                             connections.add(newConnection);
                             log.info("Connection Established too: " + newConnection.getClientSocket().getInetAddress());
-                            System.out.println("opened");
                             Listener newListener = new Listener(newConnection, searchMap, dir, port);
                             newListener.start();
                         } else {
                             newConnection.getOutData().writeByteArray("REJECT 300 Bad Handshake\n\n".getBytes());
                             log.warning("Rejected Connection to: " + newConnection.getClientSocket().getInetAddress() +
                                     " <Bad Handshake>");
-                            System.out.println("closed");
                             newConnection.getClientSocket().close();
                             neighborNodeConnection.close();
                             connections.remove(newConnection);
@@ -422,10 +420,10 @@ public class node implements Runnable{
         public void run() {
             List<Result> resultList;
             Boolean killThread = false;
-            int j = 5;
             try {
                 synchronized (inData) {
                     while (!killThread) {
+                        System.out.println("Listening");
                         msg = null;
                         try{
                             msg = decode(inData);
@@ -470,6 +468,7 @@ public class node implements Runnable{
                             }
                         }
                     }
+                    System.out.println("Thread Killed");
                 }
             } catch (BadAttributeValueException e) {
                 log.warning(e.getMessage());

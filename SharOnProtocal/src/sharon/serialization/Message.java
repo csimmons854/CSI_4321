@@ -29,7 +29,7 @@ public abstract class Message {
             throw new IOException("Null Value");
         }
 	    this.setID(in.getByteArray(15));
-	    System.out.println(Arrays.toString(this.getID()));
+        System.out.println(Arrays.toString(id));
 
         int tempTtl = in.getByte();
         //convert to unsigned long
@@ -216,7 +216,6 @@ public abstract class Message {
 
         //get type of message
         type = in.getByte();
-
 
         if(type == 1) //decode Search Message
         {
