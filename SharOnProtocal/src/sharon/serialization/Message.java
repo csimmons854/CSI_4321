@@ -49,7 +49,7 @@ public abstract class Message {
 	 * Constructs a Message
 	 * 
 	 * @param id message id
-	 * @param invalid message ttl
+	 * @param ttl message ttl
 	 * @param routingService message routing service 
 	 * @param sourceSharOnAddress message source address
 	 * @param destinationSharOnAddress message destination address

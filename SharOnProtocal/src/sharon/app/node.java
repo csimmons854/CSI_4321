@@ -62,7 +62,7 @@ public class node implements Runnable{
      * @throws BadAttributeValueException if a bad value was attempted to be inputed
      */
     public static void main(String [] args) throws IOException, BadAttributeValueException {
-        System.out.println("Node v1.02");
+        System.out.println("Node v1.03");
         if ((args.length < 3) ) { // Test for correct # of args
             throw new IllegalArgumentException("Parameter(s): <Port> <Directory> <Download Port>");
         }
@@ -137,7 +137,7 @@ public class node implements Runnable{
                         if(response.equals("OK SharOn\n\n")) {
                             connections.add(newConnection);
                             log.info("Connection Established too: " +newConnection.getClientSocket().getInetAddress());
-                            Listener newListener = new Listener(newConnection, searchMap, dir, downloadPort);
+                            Listener newListener = new Listener(newConnection, searchMap, dir, downloadPort, connections);
                             newListener.start();
                         }else {
                             System.out.println("HandShake Rejected\n" + response);
@@ -287,16 +287,18 @@ public class node implements Runnable{
 
         public void run() {
             try {
-                Long fileID = Long.parseLong(clientCon.getInData().getString());
+                Long fileID = clientCon.getInData().getInt() & 0x00000000FFFFFFFFL;
                 File newFile = findFileByID(fileID,dir);
                 FileInputStream fileInputStream;
                 int data;
                 if(newFile != null) {
                     fileInputStream = new FileInputStream(newFile);
                     clientCon.getOutData().writeByteArray("OK\n\n".getBytes());
+                    System.out.println("Sending: " + newFile.getName());
                     while ((data = fileInputStream.read()) > 0) {
                         clientCon.getOutData().writeByte((byte)data);
                     }
+                    System.out.println("File Sent");
                 }
                 else
                 {
@@ -362,13 +364,14 @@ public class node implements Runnable{
             try {
                 synchronized (connections) {
                     while (true) {
+                        System.out.println("waiting for something");
                         Socket neighborNodeConnection = server.accept();
                         Connection newConnection = new Connection(neighborNodeConnection);
                         if (newConnection.getInData().getNodeResponse().equals("INIT SharOn/1.0\n\n")) {
                             newConnection.getOutData().writeByteArray("OK SharOn\n\n".getBytes("ASCII"));
                             connections.add(newConnection);
                             log.info("Connection Established too: " + newConnection.getClientSocket().getInetAddress());
-                            Listener newListener = new Listener(newConnection, searchMap, dir, port);
+                            Listener newListener = new Listener(newConnection, searchMap, dir, port, connections);
                             newListener.start();
                         } else {
                             newConnection.getOutData().writeByteArray("REJECT 300 Bad Handshake\n\n".getBytes());
@@ -405,15 +408,17 @@ public class node implements Runnable{
         private Connection connection;
         private int port;
         private String directory;
+        private CopyOnWriteArrayList<Connection> connections;
 
-
-        Listener(Connection newConnection, HashMap<String,String> searchMap, String dir, int newPort) {
+        Listener(Connection newConnection, HashMap<String,String> searchMap, String dir, int newPort,
+                 CopyOnWriteArrayList<Connection> connections) {
             inData = newConnection.getInData();
             outData = newConnection.getOutData();
             connection = newConnection;
             this.searchMap = searchMap;
             port = newPort;
             directory = dir;
+            this.connections = connections;
 
         }
 
@@ -425,54 +430,53 @@ public class node implements Runnable{
                     while (!killThread) {
                         System.out.println("Listening");
                         msg = null;
-                        try{
+                        try {
                             msg = decode(inData);
-                        }catch (SocketException e){
-                                //System.err.println("Error at " + connection.getClientSocket().getInetAddress() +": " + e.getMessage());
-                                //e.printStackTrace();
-                            killThread = true;
-                        }
 
-                        if (msg instanceof Search) {
-                            Response outResponse =
-                                new Response(msg.getID(),msg.getTtl(),msg.getRoutingService(),
-                                             srcAddress,destAddress,
-                                             new InetSocketAddress(InetAddress.getLocalHost(),port));
+                            if (msg instanceof Search) {
+                                Response outResponse =
+                                        new Response(msg.getID(), msg.getTtl(), msg.getRoutingService(),
+                                                srcAddress, destAddress,
+                                                new InetSocketAddress(InetAddress.getLocalHost(), port));
 
-                            File dir = new File(directory);
-                            File[] foundFiles = dir.listFiles((dir1, name) ->
-                                    name.contains(((Search) msg).getSearchString()));
-                            long fileID;
-                            if(foundFiles != null) {
-                                for(File item : foundFiles) {
-                                    fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
-                                    try {
-                                        outResponse.addResult(new Result(fileID,item.length(),item.getName()));
-                                    }catch (BadAttributeValueException e){
-                                        log.warning(e.getMessage());
+                                File dir = new File(directory);
+                                File[] foundFiles = dir.listFiles((dir1, name) ->
+                                        name.contains(((Search) msg).getSearchString()));
+                                long fileID;
+                                if (foundFiles != null) {
+                                    for (File item : foundFiles) {
+                                        fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
+                                        try {
+                                            outResponse.addResult(new Result(fileID, item.length(), item.getName()));
+                                        } catch (BadAttributeValueException e) {
+                                            log.warning(e.getMessage());
+                                        }
                                     }
                                 }
+                                outResponse.encode(outData);
                             }
-                            outResponse.encode(outData);
-                        }
-                        if (msg instanceof Response) {
-                            System.out.println("Search Response for " +
-                                    searchMap.get(Arrays.toString(msg.getID())));
-                            System.out.println("Download host: " + ((Response) msg).getResponseHost());
-                            resultList = ((Response) msg).getResultList();
-                            for(int i = 0; i < resultList.size(); i++) {
-                                System.out.println("\t" + resultList.get(i).getFileName()
-                                        + ": ID " + resultList.get(i).getFileID()
-                                        + " (" + resultList.get(i).getFileSize()
-                                        + " bytes)");
+                            if (msg instanceof Response) {
+                                System.out.println("Search Response for " +
+                                        searchMap.get(Arrays.toString(msg.getID())));
+                                System.out.println("Download host: " + ((Response) msg).getResponseHost());
+                                resultList = ((Response) msg).getResultList();
+                                for (int i = 0; i < resultList.size(); i++) {
+                                    System.out.println("\t" + resultList.get(i).getFileName()
+                                            + ": ID " + resultList.get(i).getFileID()
+                                            + " (" + resultList.get(i).getFileSize()
+                                            + " bytes)");
+                                }
                             }
+                        }catch (SocketException e){
+                        //System.err.println("Error at " + connection.getClientSocket().getInetAddress() +": " + e.getMessage());
+                        //e.printStackTrace();
+                        killThread = true;
+                        }catch (BadAttributeValueException e){
+                            log.warning(e.getMessage());
                         }
                     }
-                    System.out.println("Thread Killed");
                 }
-            } catch (BadAttributeValueException e) {
-                log.warning(e.getMessage());
-            } catch (IOException e) {
+            }catch (IOException e) {
                 try {
                     connection.getClientSocket().close();
                 } catch (IOException e1) {
@@ -480,6 +484,7 @@ public class node implements Runnable{
                 }
                 log.warning(e.getMessage());
             }
+            System.out.println("Thread Killed");
         }
 
         public void start() {

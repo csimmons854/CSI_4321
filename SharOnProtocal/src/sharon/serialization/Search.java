@@ -41,6 +41,11 @@ public class Search extends Message {
         {
             searchString = temp;
         }
+		if (!searchString.matches("^[a-zA-Z0-9._-]*$"))
+		{
+			throw new BadAttributeValueException(
+					"Search uses invalid characters", searchString);
+		}
 	}
 		              
 	/**
