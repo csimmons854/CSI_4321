@@ -149,9 +149,9 @@ public class Client {
                                     } catch (IllegalArgumentException e) {
                                         System.err.println("Invalid Message: " + e.getMessage());
                                     } catch (IOException e) {
-                                        System.err.println("Communication problem: " + e.getMessage());
-                                        IOExceptionFlag = true;
-                                    }
+                                    System.err.println("Communication problem: " + e.getMessage());
+                                    IOExceptionFlag = true;
+                                }
                                 } catch (SocketTimeoutException e) {
                                     attempts++;
                                     socket.send(udpPacket);
@@ -178,7 +178,7 @@ public class Client {
     /**
      * Creates an InetSocketAddress from a string following this format:
      * address:port
-     * @param address a string ins address:port format
+     * @param address a string in address:port format
      * @return InetSocketAddress
      */
     public static InetSocketAddress createAddress(String address){

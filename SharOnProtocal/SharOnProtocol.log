@@ -1,102 +1,50 @@
-Nov 21, 2017 1:21:57 AM sharon.app.node$IncomingConnections run
+Nov 24, 2017 6:54:24 PM sharon.app.IncomingConnections run
 WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:21:57 AM sharon.app.node$IncomingConnections run
+Nov 24, 2017 6:54:24 PM sharon.app.IncomingConnections run
 INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:21:57 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:22:14 AM sharon.app.node$IncomingConnections run
+Nov 24, 2017 6:54:29 PM sharon.app.Download run
+WARNING: Connection reset
+Nov 24, 2017 6:54:54 PM sharon.app.IncomingConnections run
 WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:22:14 AM sharon.app.node$IncomingConnections run
+Nov 24, 2017 6:54:54 PM sharon.app.IncomingConnections run
 INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:22:14 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:24:13 AM sharon.app.node$IncomingConnections run
+Nov 24, 2017 6:54:54 PM sharon.app.Download run
+INFO: Sending: BeeMove.txt
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+INFO: BeeMove.txtFile Sent
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+INFO: Sending: test.txt
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+INFO: test.txtFile Sent
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+INFO: Sending: test1.txt
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+INFO: test1.txtFile Sent
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+INFO: Sending: test2.txt
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+INFO: test2.txtFile Sent
+Nov 24, 2017 6:54:56 PM sharon.app.Download run
+WARNING: Connection reset
+Nov 24, 2017 6:56:55 PM sharon.app.IncomingConnections run
 WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:24:13 AM sharon.app.node$IncomingConnections run
+Nov 24, 2017 6:56:55 PM sharon.app.IncomingConnections run
 INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:24:13 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:24:45 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:24:45 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:24:45 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:26:01 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:26:01 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:26:01 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:26:35 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:26:35 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:26:35 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:27:01 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:27:01 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:27:01 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:27:33 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:27:33 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:27:33 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:27:42 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:27:42 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:27:42 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:27:49 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:27:49 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:27:49 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:28:27 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:28:27 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:28:27 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:29:17 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:29:17 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:29:17 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:30:22 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:30:22 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:30:22 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:30:29 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:30:29 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:30:29 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:31:24 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:31:24 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:31:24 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:32:18 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:32:18 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:32:18 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
-Nov 21, 2017 1:33:00 AM sharon.app.node$IncomingConnections run
-WARNING: Rejected Connection to: /127.0.0.1 <Bad Handshake>
-Nov 21, 2017 1:33:00 AM sharon.app.node$IncomingConnections run
-INFO: Connection Established too: /127.0.0.1
-Nov 21, 2017 1:33:00 AM sharon.app.node$Listener run
-WARNING: Search uses invalid characters
+Nov 24, 2017 6:56:55 PM sharon.app.Download run
+INFO: Sending: BeeMove.txt
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+INFO: BeeMove.txtFile Sent
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+INFO: Sending: test.txt
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+INFO: test.txtFile Sent
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+INFO: Sending: test1.txt
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+INFO: test1.txtFile Sent
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+INFO: Sending: test2.txt
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+INFO: test2.txtFile Sent
+Nov 24, 2017 6:56:56 PM sharon.app.Download run
+WARNING: Connection reset

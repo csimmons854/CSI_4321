@@ -35,7 +35,9 @@ public class Search extends Message {
 
 		if(temp.length() != payload - 1)
 		{
-			throw new IOException(Arrays.toString(getID())+ " " +  getTtl() + temp + " " + payload);
+			throw new IOException("Payload and Search length mismatch\n" +
+                                  "Payload Size:  " + payload + "\n" +
+                                  "Search Length: " + temp.length());
 		}
 		else
         {
@@ -43,6 +45,7 @@ public class Search extends Message {
         }
 		if (!searchString.matches("^[a-zA-Z0-9._-]*$"))
 		{
+		    System.err.println("Triggered");
 			throw new BadAttributeValueException(
 					"Search uses invalid characters", searchString);
 		}

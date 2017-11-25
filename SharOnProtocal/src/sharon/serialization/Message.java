@@ -64,11 +64,11 @@ public abstract class Message {
         }
 
         if (id.length < 15) {
-            throw new BadAttributeValueException("Too Short ID", id.toString());
+            throw new BadAttributeValueException("Too Short ID", Arrays.toString(id));
         }
 
         if (id.length > 15) {
-            throw new BadAttributeValueException("Too Large ID", id.toString());
+            throw new BadAttributeValueException("Too Large ID", Arrays.toString(id));
         }
 
 
@@ -98,13 +98,13 @@ public abstract class Message {
         if (sourceSharOnAddress.length > 5)
         {
             throw new BadAttributeValueException("Too large sourceAddress",
-                    sourceSharOnAddress.toString());
+                    Arrays.toString(sourceSharOnAddress));
         }
 
         if (sourceSharOnAddress.length < 5)
         {
             throw new BadAttributeValueException("Too small sourceAddress",
-                    sourceSharOnAddress.toString());
+                    Arrays.toString(sourceSharOnAddress));
         }
 
         if (destinationSharOnAddress == null)
@@ -115,13 +115,13 @@ public abstract class Message {
         if (destinationSharOnAddress.length > 5)
         {
             throw new BadAttributeValueException("Too large destinationAddress",
-                    sourceSharOnAddress.toString());
+                    Arrays.toString(sourceSharOnAddress));
         }
 
         if (destinationSharOnAddress.length < 5)
         {
             throw new BadAttributeValueException("Too small destinationAddress",
-                    destinationSharOnAddress.toString());
+                    Arrays.toString(destinationSharOnAddress));
         }
 
         this.ttl = ttl;
@@ -188,9 +188,7 @@ public abstract class Message {
 
         }
         else
-        {
             throw new IOException();
-        }
     }
 	
 	/**
@@ -198,7 +196,7 @@ public abstract class Message {
 	 * 
 	 * @param in deserialization input source
 	 * 
-	 * @return
+	 * @return deserialize message
 	 * @throws java.io.IOException if deserialization fails
 	 * @throws BadAttributeValueException if bad attribute value
 	 */
@@ -237,7 +235,7 @@ public abstract class Message {
 	 * 
 	 * @return message type
 	 */
-	public int getMessageType()
+    public int getMessageType()
 	{
 	    int type = 0;
 		if(this instanceof Search)
@@ -279,12 +277,12 @@ public abstract class Message {
 
         if(id.length < 15)
         {
-            throw new BadAttributeValueException("Too Short ID", id.toString());
+            throw new BadAttributeValueException("Too Short ID", Arrays.toString(id));
         }
 
         if(id.length > 15)
         {
-            throw new BadAttributeValueException("Too Large ID", id.toString());
+            throw new BadAttributeValueException("Too Large ID", Arrays.toString(id));
         }
 
         this.id = id.clone();
@@ -382,13 +380,13 @@ public abstract class Message {
         if(sourceAddress.length > 5)
         {
             throw new BadAttributeValueException("Too large sourceAddress",
-                    sourceAddress.toString());
+                    Arrays.toString(sourceAddress));
         }
 
         if(sourceAddress.length < 5)
         {
             throw new BadAttributeValueException("Too small sourceAddress",
-                    sourceAddress.toString());
+                    Arrays.toString(sourceAddress));
         }
 
         this.sourceSharOnAddress = sourceAddress.clone();
@@ -417,13 +415,13 @@ public abstract class Message {
         if(destinationAddress.length > 5)
         {
             throw new BadAttributeValueException("Too large destinationAddress",
-                    sourceSharOnAddress.toString());
+                    Arrays.toString(sourceSharOnAddress));
         }
 
         if(destinationAddress.length < 5)
         {
             throw new BadAttributeValueException("Too small destinationAddress",
-                    destinationAddress.toString());
+                    Arrays.toString(destinationAddress));
         }
 
         this.destinationSharOnAddress = destinationAddress.clone();

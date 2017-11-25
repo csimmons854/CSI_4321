@@ -21,8 +21,8 @@ public class Connection {
     private MessageInput inData;
 
     /**
-     * @param newSocket set the socket for the connetions
-     * @throws IOException
+     * @param newSocket set the socket for the connections
+     * @throws IOException Exception to be thrown
      */
     public Connection(Socket newSocket) throws IOException {
         clientSocket = newSocket;
