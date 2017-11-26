@@ -21,12 +21,12 @@ class DownloadConnections implements Runnable {
 
 
     DownloadConnections(ServerSocket newServer, String dir,
-                        Logger logger, ExecutorService executorService) {
+                        Logger logger) {
 
         downloadServer = newServer;
         this.dir = dir;
         log = logger;
-        downloadExecutor = executorService;
+        downloadExecutor = null;
     }
 
     public void run() {

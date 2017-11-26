@@ -79,7 +79,7 @@ public class Node{
                                                         connections, searchMap, dir, downloadPort, log);
         incomingConnections.start();
 
-        DownloadConnections downloadConnections = new DownloadConnections(downloadSocket, dir, log, downloadExecutor);
+        DownloadConnections downloadConnections = new DownloadConnections(downloadSocket, dir, log);
         downloadConnections.start();
 
         while(!exitFlag) {

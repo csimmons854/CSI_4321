@@ -54,7 +54,7 @@ public class Client {
                     cmdType = commandTokenizer.nextToken();
                 }
 
-                sessionID = r.nextInt(255 - 1) + 1;
+                sessionID = r.nextInt(256 - 1) + 1;
 
                 //if command is RN send a RequestNodes Packet
                 if (cmdType.equals("RN")) {
