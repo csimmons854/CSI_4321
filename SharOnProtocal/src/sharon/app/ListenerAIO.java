@@ -108,6 +108,7 @@ public class ListenerAIO {
             int payloadLength = buf.getShort() & 0x0000FFFF;
             bytes.add((byte) (payloadLength >> 16));
             bytes.add((byte)payloadLength);
+            System.out.println(payloadLength);
             for(int i = 0; i < payloadLength; i++){
                 bytes.add(buf.get());
             }

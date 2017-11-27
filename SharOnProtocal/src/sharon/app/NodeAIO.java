@@ -13,6 +13,7 @@ import java.nio.channels.CompletionHandler;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -29,7 +30,7 @@ public class NodeAIO {
     final private int MAXMVNS = 5;
     final private int NGHBRS = 10;
     final private int RFSH = 10;
-    private Set<AsynchronousSocketChannel> channelSet = new HashSet<>();
+    private CopyOnWriteArrayList<AsynchronousSocketChannel> channelSet = new CopyOnWriteArrayList<>();
     private Set<InetSocketAddress> connectedAddresses = new HashSet<>();
     final private Semaphore channelSetLock = new Semaphore(1);
     static private String directory;
@@ -135,7 +136,15 @@ public class NodeAIO {
                 byte [] dest = {0,0,0,0,0};
                 try {
                     Search testSearch = new Search(id,1, RoutingService.BREADTHFIRSTBROADCAST,src,dest,"");
-                    //new SenderAIO(clientChannel,testSearch,log);
+
+                    Boolean sent  = false;
+                    while(!sent){
+                        if(channelSet.size() > 0){
+                            new SenderAIO(channelSet.get(0),testSearch,log);
+                            sent = true;
+                        }
+                    }
+
                 } catch (BadAttributeValueException e) {
                     e.printStackTrace();
                 }
@@ -218,7 +227,7 @@ public class NodeAIO {
             System.out.println("Connected to " + clientChannel.getRemoteAddress());
             channelSetLock.acquire();
             new ListenerAIO(clientChannel, log,downloadPort,directory);
-            //channelSet.add(clientChannel);
+            channelSet.add(clientChannel);
             channelSetLock.release();
         }else{
             System.out.println("Handshake rejected " + clientChannel.getRemoteAddress());
