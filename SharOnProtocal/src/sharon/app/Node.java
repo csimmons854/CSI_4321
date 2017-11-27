@@ -110,7 +110,7 @@ public class Node{
                             if (response.equals("OK SharOn\n\n")) {
                                 connections.add(newConnection);
                                 log.info("Connection Established too: " + newConnection.getClientSocket().getInetAddress());
-                                Listener newListener = new Listener(newConnection, searchMap, dir, downloadPort, connections, log);
+                                Listener newListener = new Listener(newConnection, searchMap, dir, downloadPort, log);
                                 newListener.start();
                             } else {
                                 System.out.println("HandShake Rejected\n" + response);

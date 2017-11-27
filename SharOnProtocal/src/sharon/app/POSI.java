@@ -86,11 +86,10 @@ public class POSI {
             System.err.println(e.getMessage());
         }
 
-        if(newPacket.getAddrList().size() > 1){
+        if(newPacket != null && newPacket.getAddrList().size() > 1){
             return newPacket.getAddrList();
         }
         else{
-            System.out.println("returning null");
             return null;
         }
     }

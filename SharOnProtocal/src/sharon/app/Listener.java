@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 import static sharon.serialization.Message.decode;
@@ -23,18 +22,16 @@ class Listener implements Runnable {
     private Connection connection;
     private int port;
     private String directory;
-    private CopyOnWriteArrayList<Connection> connections;
     private Logger log;
 
-    Listener(Connection newConnection, HashMap<String,String> searchMap, String dir, int newPort,
-             CopyOnWriteArrayList<Connection> connections, Logger logger) {
+    Listener(Connection newConnection, HashMap<String, String> searchMap, String dir, int newPort,
+             Logger logger) {
         inData = newConnection.getInData();
         outData = newConnection.getOutData();
         connection = newConnection;
         this.searchMap = searchMap;
         port = newPort;
         directory = dir;
-        this.connections = connections;
         log = logger;
 
     }
@@ -51,26 +48,8 @@ class Listener implements Runnable {
                         msg = decode(inData);
 
                         if (msg instanceof Search) {
-                            Response outResponse =
-                                    new Response(msg.getID(), msg.getTtl(), msg.getRoutingService(),
-                                            srcAddress, destAddress,
-                                            new InetSocketAddress(InetAddress.getLocalHost(), port));
+                            Response outResponse = Utilities.createRsp((Search) msg,directory,port,log);
 
-                            File dir = new File(directory);
-                            File[] foundFiles = dir.listFiles((dir1, name) ->
-                                    name.contains(((Search) msg).getSearchString()));
-                            long fileID;
-                            if (foundFiles != null) {
-                                for (File item : foundFiles) {
-                                    fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
-                                    try {
-                                        outResponse.addResult(new Result(fileID, item.length(), item.getName()));
-                                    } catch (BadAttributeValueException e) {
-                                        log.warning(e.getMessage());
-                                    }
-                                }
-                            }
-                            System.out.println(outResponse.getResultList());
                             outResponse.encode(outData);
                         }
                         if (msg instanceof Response) {

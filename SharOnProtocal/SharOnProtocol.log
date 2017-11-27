@@ -1,8 +1,8 @@
-Nov 26, 2017 11:17:58 AM sharon.app.IncomingConnections run
-WARNING: Connection reset
-Nov 26, 2017 11:18:05 AM sharon.app.IncomingConnections run
-WARNING: Connection reset
-Nov 26, 2017 11:18:57 AM sharon.app.IncomingConnections run
+Nov 27, 2017 12:35:32 AM sharon.app.IncomingConnections run
 INFO: Connection Established too: /127.0.0.1
-Nov 26, 2017 11:19:12 AM sharon.app.Listener run
-WARNING: Read timed out
+Nov 27, 2017 12:36:48 AM sharon.app.IncomingConnections run
+INFO: Connection Established too: /127.0.0.1
+Nov 27, 2017 12:36:58 AM sharon.app.IncomingConnections run
+INFO: Connection Established too: /127.0.0.1
+Nov 27, 2017 12:37:56 AM sharon.app.IncomingConnections run
+INFO: Connection Established too: /127.0.0.1

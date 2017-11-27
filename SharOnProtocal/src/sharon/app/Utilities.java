@@ -1,7 +1,17 @@
 package sharon.app;
 
+import sharon.serialization.*;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Logger;
 
 class Utilities {
      static File findFileByID(String id, String directory) {
@@ -48,4 +58,27 @@ class Utilities {
         }
         return id;
     }
+
+    static public Response createRsp(Search message, String directory, int downloadPort, Logger log) throws UnknownHostException, BadAttributeValueException {
+        Response outResponse =
+                new Response(message.getID(), message.getTtl(), message.getRoutingService(),
+                        message.getDestinationAddress(), message.getSourceAddress(),
+                        new InetSocketAddress(InetAddress.getLocalHost(), downloadPort));
+        File dir = new File(directory);
+        File[] foundFiles = dir.listFiles((dir1, name) ->
+                name.contains(((Search) message).getSearchString()));
+        long fileID;
+        if (foundFiles != null) {
+            for (File item : foundFiles) {
+                fileID = item.getName().hashCode() & 0x00000000FFFFFFFFL;
+                try {
+                    outResponse.addResult(new Result(fileID, item.length(), item.getName()));
+                } catch (BadAttributeValueException e) {
+                    log.warning(e.getMessage());
+                }
+            }
+        }
+        return outResponse;
+    }
+
 }

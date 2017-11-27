@@ -32,14 +32,13 @@ class IncomingConnections implements Runnable {
                     try {
                         System.out.println("waiting for something");
                         Socket neighborNodeConnection = server.accept();
-                        neighborNodeConnection.setSoTimeout(15000);
                         System.out.println("New Connection: " + neighborNodeConnection.getInetAddress() + ":" + neighborNodeConnection.getPort());
                         Connection newConnection = new Connection(neighborNodeConnection);
                         if (newConnection.getInData().getNodeResponse().equals("INIT SharOn/1.0\n\n")) {
                             newConnection.getOutData().writeByteArray("OK SharOn\n\n".getBytes("ASCII"));
                             connections.add(newConnection);
                             log.info("Connection Established too: " + newConnection.getClientSocket().getInetAddress());
-                            Listener newListener = new Listener(newConnection, searchMap, dir, port, connections, log);
+                            Listener newListener = new Listener(newConnection, searchMap, dir, port, log);
                             newListener.start();
                         } else {
                             newConnection.getOutData().writeByteArray("REJECT 300 Bad Handshake\n\n".getBytes());
