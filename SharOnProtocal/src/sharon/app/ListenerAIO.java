@@ -25,50 +25,46 @@ public class ListenerAIO {
     String directory;
     private ArrayList<Byte> temp = new ArrayList<>();
 
-    public ListenerAIO(AsynchronousSocketChannel clientChannel, Logger log, int downloadPort, String directory){
+    public ListenerAIO(AsynchronousSocketChannel clientChannel, Logger log,
+                       int downloadPort, String directory, ArrayList<Byte> buffer){
         this.downloadPort = downloadPort;
         this.log = log;
         this.directory = directory;
+        temp.addAll(buffer);
 
         read(clientChannel);
     }
 
     public void handleRead(AsynchronousSocketChannel clientChannel, ByteBuffer buf, Integer bytesRead) throws IOException, BadAttributeValueException {
-
         for(int i = 0; i < bytesRead; i++ ){
             temp.add(buf.get(i));
         }
+        byte [] bytes = new byte[temp.size()];
+        for(int i = 0; i < temp.size(); i++){
+            bytes[i] = temp.get(i);
+        }
+        Message message = getMessage(ByteBuffer.wrap(bytes));
+        if(message != null){
+            System.out.println("Message: " + message);
+            if(message instanceof Search) {
+                Response rsp = createRsp((Search) message, directory, downloadPort, log);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                rsp.encode(new MessageOutput(baos));
+                ByteBuffer outBuf = ByteBuffer.wrap(baos.toByteArray());
+                clientChannel.write(outBuf,outBuf,new CompletionHandler<Integer,ByteBuffer>(){
+                    public void completed(Integer bytesWritten, ByteBuffer buf) {
 
-        if(temp.size() > 30){
-            byte [] bytes = new byte[temp.size()];
-            for(int i = 0; i < temp.size(); i++){
-                bytes[i] = temp.get(i);
-            }
-            Message message = getMessage(ByteBuffer.wrap(bytes));
-            if(message != null){
-                temp.clear();
-                System.out.println("Message: " + message);
-                if(message instanceof Search) {
-                    Response rsp = createRsp((Search) message, directory, downloadPort, log);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    rsp.encode(new MessageOutput(baos));
-                    ByteBuffer outBuf = ByteBuffer.wrap(baos.toByteArray());
-                    clientChannel.write(outBuf,outBuf,new CompletionHandler<Integer,ByteBuffer>(){
-                        public void completed(Integer bytesWritten, ByteBuffer buf) {
-
+                    }
+                    public void failed(Throwable ex, ByteBuffer buf) {
+                        try {
+                            clientChannel.close();
+                        } catch (IOException e) {
+                            log.log(Level.WARNING, "Close Failed", e);
                         }
-                        public void failed(Throwable ex, ByteBuffer buf) {
-                            try {
-                                clientChannel.close();
-                            } catch (IOException e) {
-                                log.log(Level.WARNING, "Close Failed", e);
-                            }
-                        }
-                    });
-                }
-                read(clientChannel);
+                    }
+                });
             }
-
+            read(clientChannel);
         } else {
             read(clientChannel);
         }
@@ -88,7 +84,6 @@ public class ListenerAIO {
             }
 
             public void failed(Throwable ex, ByteBuffer v) {
-                System.out.println("Failed yo");
                 try {
                     clientChannel.close();
                 } catch (IOException e) {
@@ -98,6 +93,7 @@ public class ListenerAIO {
         });
     }
     public Message getMessage(ByteBuffer buf) throws IOException {
+        temp.clear();
         Message message = null;
         ArrayList<Byte> bytes = new ArrayList<Byte>();
 
@@ -108,26 +104,32 @@ public class ListenerAIO {
             int payloadLength = buf.getShort() & 0x0000FFFF;
             bytes.add((byte) (payloadLength >> 16));
             bytes.add((byte)payloadLength);
-            System.out.println(payloadLength);
-            for(int i = 0; i < payloadLength; i++){
-                bytes.add(buf.get());
-            }
-            byte[] byteArray = new byte[bytes.size()];
-            for(int i = 0; i < byteArray.length; i++){
-                byteArray[i] = bytes.get(i);
-            }
+            if(buf.remaining() >= payloadLength){
+                for(int i = 0; i < payloadLength; i++){
+                    bytes.add(buf.get());
+                }
 
-            try {
-                message = message.decode(new MessageInput(new ByteArrayInputStream(byteArray)));
-            }catch (BadAttributeValueException e){
-                System.out.println(e.getMessage());
-                message = null;
+                byte[] byteArray = new byte[bytes.size()];
+                for(int i = 0; i < byteArray.length; i++){
+                    byteArray[i] = bytes.get(i);
+                }
+                try {
+                    message = message.decode(new MessageInput(new ByteArrayInputStream(byteArray)));
+                }catch (BadAttributeValueException e){
+                    for(byte b : byteArray){
+                        temp.add(b);
+                    }
+                    message = null;
+                }
+            }else{
+                temp.addAll(bytes);
             }
 
         }
         while(buf.remaining() > 0){
             temp.add(buf.get());
         }
+
         return message;
     }
 

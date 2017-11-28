@@ -1,6 +1,5 @@
 package sharon.app;
 
-import sharon.serialization.Message;
 import sharon.serialization.MessageOutput;
 import sharon.serialization.Search;
 
