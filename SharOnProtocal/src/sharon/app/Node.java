@@ -1,7 +1,7 @@
 /************************************************
  *
  * Author: Chris Simmons
- * Assignment: Program0Test
+ * Assignment: Program 7
  * Class: CSI 4321 Data Communications
  *
  ************************************************/
@@ -132,44 +132,8 @@ public class Node{
                         String fileID = commandTokenizer.nextToken();
                         String fileName = commandTokenizer.nextToken();
 
-                        if (!Utilities.checkForFile(fileName, dir)) {
-                            try {
-                                System.out.println("Download name: " + outDownloadName);
-                                System.out.println("Download Port: " + outDownloadPort);
-                                Connection newConnection = new Connection(new Socket(outDownloadName, outDownloadPort));
-                                System.out.println("Download Connection established");
-                                newConnection.writeMessage(fileID + "\n");
-                                System.out.println("File ID: " + fileID);
-                                StringBuilder rsp = new StringBuilder();
-                                for (int i = 0; i < 4; i++) {
-                                    rsp.append((char) newConnection.getInData().getByte());
-                                }
-                                if (rsp.toString().equals("OK\n\n")) {
-                                    File newFile = new File(dir + "\\" + fileName);
-                                    OutputStream out = new FileOutputStream(newFile);
-                                    InputStream in = newConnection.getClientSocket().getInputStream();
-                                    byte[] buffer = new byte[1024];
-                                    int read;
-                                    while ((read = in.read(buffer)) != -1) {
-                                        out.write(buffer, 0, read);
-                                    }
-                                    out.close();
-                                    in.close();
-                                } else {
-                                    InputStream in = newConnection.getClientSocket().getInputStream();
-                                    int read;
-                                    while ((read = in.read()) != -1) {
-                                        rsp.append((char) read);
-                                    }
-                                    System.out.println(rsp);
-                                }
-                            } catch (Exception e) {
-                                System.err.println(e.getMessage());
-                                log.warning(e.getMessage());
-                            }
-                        } else {
-                            System.out.println("File already exists in directory");
-                        }
+                        new Download(dir,log).startDownload(outDownloadName,outDownloadPort,fileID,fileName);
+
                     } else {
                         System.out.println("Invalid download format: download " +
                                 "<download Node> <download port> <File ID> " +

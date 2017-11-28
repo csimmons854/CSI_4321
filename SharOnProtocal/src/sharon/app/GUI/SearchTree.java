@@ -73,7 +73,7 @@ public class SearchTree extends JPanel {
                         if (c instanceof DownloadNode) {
                             final DownloadNode dn = (DownloadNode) c;
                             if (sharOnListener != null) {
-                                sharOnListener.download(dn.getFileID(), dn.getDownloadHost());
+                                sharOnListener.download(dn.getFileID(), dn.getDownloadHost(),dn.getDownlaodName());
                             }
                         }
                     }
@@ -182,6 +182,7 @@ class DownloadNode extends DefaultMutableTreeNode {
      * Host of download
      */
     private InetSocketAddress downloadHost;
+    private String downlaodName;
     
     /**
      * Construct new download node
@@ -194,6 +195,7 @@ class DownloadNode extends DefaultMutableTreeNode {
         super(name);
         this.fileID = fileID;
         this.downloadHost = downloadHost;
+        this.downlaodName = name;
     }
     
     /**
@@ -205,7 +207,7 @@ class DownloadNode extends DefaultMutableTreeNode {
         return downloadHost;
     }
 
-    
+    public String getDownlaodName() {return  downlaodName;}
     /**
      * Get File ID for download
      * 

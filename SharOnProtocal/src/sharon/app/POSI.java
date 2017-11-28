@@ -1,3 +1,10 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 7
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package sharon.app;
 
 import mvn.serialization.ErrorType;
@@ -6,25 +13,72 @@ import mvn.serialization.PacketType;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Set;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
-public class POSI {
+/**
+ * POSI class for managing mavens and nodes
+ */
+public class POSI implements Runnable {
+    private Thread t;
     final private int MAXMVNS = 5;
     final private int NGHBRS = 10;
     final private int RFSH = 10;
 
     private Packet mavens;
     private Packet nodes;
+    private InetSocketAddress localAddress;
+    private InetSocketAddress startingMaven;
+    private Logger log;
 
-    public POSI (InetSocketAddress startingNode){
+    /**
+     * @param startingNode first node to be added
+     * @param log log file
+     * @param startingMaven first Maven to be added
+     * @throws IOException
+     */
+    public POSI (InetSocketAddress startingNode, Logger log,InetSocketAddress startingMaven) throws IOException {
+        this.log = log;
+        localAddress = startingNode;
         mavens = new Packet(PacketType.AnswerRequest, ErrorType.None,0);
         nodes = new Packet(PacketType.AnswerRequest, ErrorType.None,0);
-        nodes.addAddress(startingNode);
+        this.startingMaven = startingMaven;
     }
 
-    public void addMaven(InetSocketAddress newMaven) throws IOException {
+    @Override
+    public void run() {
+        nodes.addAddress(localAddress);
+        try {
+            addMaven(startingMaven);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            Thread.sleep(RFSH*60*1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            posiRefresh();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void start() {
+        if (t == null) {
+            t = new Thread(this);
+            t.start();
+        }
+    }
+
+    /**
+     * @param newMaven maven ot be added
+     * @throws Exception
+     */
+    public void addMaven(InetSocketAddress newMaven) throws Exception {
         Set<InetSocketAddress> addrList;
         Set<InetSocketAddress> mavenAddrList = mavens.getAddrList();
         if (mavenAddrList.size() < MAXMVNS && !mavenAddrList.contains(newMaven)) {
@@ -43,13 +97,16 @@ public class POSI {
                     addMaven(maven);
                 }
             }
-            else{
-                System.out.println("Maven List was empty");
-            }
         }
     }
 
-    private Set<InetSocketAddress> requestInfo(InetSocketAddress dest,PacketType type) throws IOException {
+    /**
+     * @param dest destionation to get information from
+     * @param type type of packet to be sent
+     * @return a set of the information retrieved
+     * @throws Exception
+     */
+    private Set<InetSocketAddress> requestInfo(InetSocketAddress dest,PacketType type) throws Exception {
         int sessionID = new Random().nextInt(256 - 1) + 1;
         Packet packet = new Packet(type, ErrorType.None, sessionID);
         boolean receivedFlag = false;
@@ -85,16 +142,22 @@ public class POSI {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
-
-        if(newPacket != null && newPacket.getAddrList().size() > 1){
+        if(attempts == 3){
+            mavens.delAddress(dest);
+            for(InetSocketAddress addr : (HashSet<InetSocketAddress>)mavens.getAddrList()){
+                removeNodeOrMaven(addr,dest,PacketType.MavenDeletions);
+            }
+        }
+        if(newPacket != null && newPacket.getAddrList().size() > 0){
             return newPacket.getAddrList();
         }
         else{
             return null;
         }
+
     }
 
-    private void sendUnknownInfo(InetSocketAddress dest, Set<InetSocketAddress> destList, PacketType type) throws IOException {
+    public void sendUnknownInfo(InetSocketAddress dest, Set<InetSocketAddress> destList, PacketType type) throws IOException {
         int sessionID = new Random().nextInt(256 - 1) + 1;
 
         Packet packet = new Packet(type, ErrorType.None, sessionID);
@@ -124,8 +187,14 @@ public class POSI {
         }
     }
 
-    private void removeNodeOrMaven(InetSocketAddress dest, InetSocketAddress addr, PacketType type) throws Exception {
+    public void removeNodeOrMaven(InetSocketAddress dest, InetSocketAddress addr, PacketType type) throws IOException {
         if(type == PacketType.MavenDeletions || type == PacketType.NodeDeletions) {
+            if(type == PacketType.NodeDeletions){
+                if(nodes.getAddrList().contains(addr)) {
+                    nodes.delAddress(addr);
+                }
+            }
+
             int sessionID = new Random().nextInt(256) + 1;
             Packet packet = new Packet(type, ErrorType.None, sessionID);
             packet.addAddress(addr);
@@ -134,8 +203,6 @@ public class POSI {
             DatagramPacket udpPacket = new DatagramPacket(packetByteArray, packetByteArray.length,
                     dest.getAddress(), dest.getPort());
             udpSocket.send(udpPacket);
-        }else{
-            throw new Exception("Invalid PacketType Argument");
         }
     }
 
@@ -146,5 +213,50 @@ public class POSI {
     public Set<InetSocketAddress> getNodes(){
         return nodes.getAddrList();
     }
+
+    public CopyOnWriteArrayList<AsynchronousSocketChannel> getChannelSet() throws IOException {
+        CopyOnWriteArrayList<AsynchronousSocketChannel> channelSet = new CopyOnWriteArrayList<>();
+        synchronized (channelSet){
+            Vector<InetSocketAddress> availibleNodes = new Vector<>();
+            for(InetSocketAddress address : (HashSet<InetSocketAddress>)nodes.getAddrList()){
+                if(address != localAddress) {
+                    availibleNodes.add(address);
+                }
+            }
+            while (channelSet.size() < NGHBRS && !availibleNodes.isEmpty()){
+                int r = new Random().nextInt(availibleNodes.size());
+                ConnectionAIO newCon = new ConnectionAIO(log);
+                if(newCon.initiateConnection(availibleNodes.get(r))){
+                    channelSet.add(newCon.getClientChannel());
+                }else{
+                    for(InetSocketAddress address : this.getNodes()){
+                        removeNodeOrMaven(address,availibleNodes.get(r),PacketType.NodeDeletions);
+                    }
+                }
+                availibleNodes.remove(r);
+            }
+        }
+        return channelSet;
+    }
+
+    public int getNGHBRS(){
+        return NGHBRS;
+    }
+
+    public void posiRefresh() throws Exception {
+        Vector<InetSocketAddress> temp = new Vector<>();
+        nodes = new Packet(PacketType.AnswerRequest, ErrorType.None,0);
+        for (AsynchronousSocketChannel socket: this.getChannelSet()) {
+            nodes.addAddress((InetSocketAddress)socket.getRemoteAddress());
+        }
+        for(InetSocketAddress maven : (HashSet<InetSocketAddress>)mavens.getAddrList()){
+            mavens.delAddress(maven);
+            temp.add(maven);
+        }
+        for(InetSocketAddress newMaven: temp){
+            addMaven(newMaven);
+        }
+    }
+
 
 }

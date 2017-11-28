@@ -30,5 +30,5 @@ public interface SharOnListener {
      * @param fileID file ID
      * @param downloadHost download host address/port
      */
-    void download(long fileID, InetSocketAddress downloadHost);
+    void download(long fileID, InetSocketAddress downloadHost, String name);
 }

@@ -1,50 +1,76 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 7
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package sharon.app;
 
+import sharon.app.GUI.GHooI;
+import sharon.app.GUI.SearchResultsListener;
+import sharon.app.GUI.SharOnListener;
 import sharon.serialization.BadAttributeValueException;
 import sharon.serialization.RoutingService;
 import sharon.serialization.Search;
 
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Semaphore;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 
+/**
+ * Main NodeAIO class
+ */
 public class NodeAIO {
     private InetAddress mavenAddress;
     private int mavenPort;
     private int localPort;
     private int downloadPort;
     private static Logger log;
-    final private int MAXMVNS = 5;
-    final private int NGHBRS = 10;
-    final private int RFSH = 10;
     private CopyOnWriteArrayList<AsynchronousSocketChannel> channelSet = new CopyOnWriteArrayList<>();
     private ArrayList<Byte> cache = new ArrayList<>();
-    final private Semaphore channelSetLock = new Semaphore(1);
     static private String directory;
+    private POSI posi;
+    private SearchResultsListener searchResultsListener;
+    private static boolean none= true;
 
 
+    /**
+     * @param mavenAddress maven address
+     * @param mavenPort maven port
+     * @param localPort local port of accepting connections
+     * @param downloadPort download port for accepting downloads
+     */
     public NodeAIO(InetAddress mavenAddress, int mavenPort, int localPort, int downloadPort) {
         this.mavenAddress = mavenAddress;
         this.mavenPort = mavenPort;
         this.localPort = localPort;
         this.downloadPort = downloadPort;
+
     }
 
-    static public void main(String [] args) throws IOException, InterruptedException {
+    /**
+     * @param args program arguments
+     * @throws Exception
+     */
+    static public void main(String [] args) throws Exception {
         if ((args.length < 5) ) { // Test for correct # of args
             throw new IllegalArgumentException("Parameter(s): <Maven Address> <Maven Port> <Local Port>" +
             "<Download Port> <Download Directory>");
+        }
+
+        if(args.length != 6){
+            none = false;
+        }else if(!args[5].equals("-n")){
+            throw new IllegalArgumentException("Parameter(s): <Maven Address> <Maven Port> <Local Port>" +
+                    "<Download Port> <Download Directory>");
         }
 
         directory = args[4];
@@ -54,7 +80,11 @@ public class NodeAIO {
         nodeAIO.start();
     }
 
-    public void start() throws IOException, InterruptedException {
+    /**
+     * Executes NodeAIO
+     * @throws Exception
+     */
+    public void start() throws Exception {
         log = Logger.getLogger("SharOnProtocol.log");
         FileHandler fh;
         fh = new FileHandler("SharOnProtocol.log");
@@ -62,9 +92,16 @@ public class NodeAIO {
         fh.setFormatter(new SimpleFormatter());
         log.setUseParentHandlers(false);
         HashMap<String, String> searchMap = new HashMap<>();
+        InetSocketAddress localAddress = new InetSocketAddress(InetAddress.getLocalHost(),localPort);
 
-        /*
-        POSI posi = new POSI(new InetSocketAddress(InetAddress.getLocalHost(),localPort));
+
+        AsynchronousServerSocketChannel serverSocketChannel =
+                AsynchronousServerSocketChannel.open();
+        serverSocketChannel.bind(localAddress);
+        new IncomingConnectionsAIO(channelSet,serverSocketChannel,log,downloadPort,directory,searchMap,searchResultsListener);
+
+        posi = new POSI(localAddress,log,new InetSocketAddress(mavenAddress,mavenPort));
+        posi.start();
         System.out.println("Created POSI");
 
         try {
@@ -76,260 +113,150 @@ public class NodeAIO {
             System.err.println(e.getMessage());
         }
 
-        try {
-            posi.addMaven(new InetSocketAddress(mavenAddress, mavenPort));
-
-
-
-        } catch (IOException e) {
-            System.err.println("Failed to establish connection to maven");
-            e.printStackTrace();
-        }
         System.out.println("Mavens" + posi.getMavens());
         System.out.println("Nodes" + posi.getNodes());
-
-
-
-        //ArrayList<InetSocketAddress> nodesList = new ArrayList<>();
-        /*
-        for(InetSocketAddress addr: posi.getNodes()){
-            nodesList.add(addr);
+        channelSet.addAll(posi.getChannelSet());
+        for(AsynchronousSocketChannel channel : channelSet){
+            new ListenerAIO(channel, log, downloadPort, directory,cache,searchMap,searchResultsListener);
         }
-        */
 
-        AsynchronousServerSocketChannel serverSocketChannel =
-                AsynchronousServerSocketChannel.open();
-        serverSocketChannel.bind(new InetSocketAddress(localPort));
 
-        new IncomingConnectionsAIO(channelSet,serverSocketChannel,log,downloadPort,directory);
+        final GHooI gui = new GHooI();
 
-        Boolean exitFlag = false;
-        while(!exitFlag) {
-            System.out.println("Enter a Command");
-            Scanner reader = new Scanner(System.in);  // Reading from System.in
-            String getLine = reader.nextLine();
-            String command = "";
-            StringTokenizer commandTokenizer = new StringTokenizer(getLine);
+        // Need a SearchResultsListener (from GUI) to make a SharonListener
+        searchResultsListener = gui.getSearchResultsListener();
 
-            if(!getLine.equals("")) {
-                command = commandTokenizer.nextToken();
-            }
+        // Create SharOn listener
+        final SharOnListener sharOnListener = new SharOnListener() {
 
-            switch (command) {
-                case "exit":
-                    exitFlag = true;
-                    break;
-                case "connect":
-                    if (commandTokenizer.countTokens() >= 2) {
-                        InetSocketAddress address = new InetSocketAddress(commandTokenizer.nextToken(),
-                                Integer.parseInt(commandTokenizer.nextToken()));
-                        try {
-                            initiateConnection(address);
-                        } catch (IOException e) {
-                            log.warning(e.getMessage());
-                        }
-                    } else {
-                        System.out.println("Invalid connect format connect " +
-                                "<connector Node> <connector port>");
-                    }
-                    break;
-                case "download":
-                    if (commandTokenizer.countTokens() == 4) {
-                        String outDownloadName = commandTokenizer.nextToken();
-                        int outDownloadPort = Integer.parseInt(commandTokenizer.nextToken());
-                        String fileID = commandTokenizer.nextToken();
-                        String fileName = commandTokenizer.nextToken();
-                        /*
-                        if (!Utilities.checkForFile(fileName, directory)) {
-                            try {
-                                System.out.println("Download name: " + outDownloadName);
-                                System.out.println("Download Port: " + outDownloadPort);
-
-                                Connection newConnection = new Connection(new Socket(outDownloadName, outDownloadPort));
-                                System.out.println("Download Connection established");
-                                newConnection.writeMessage(fileID + "\n");
-                                System.out.println("File ID: " + fileID);
-                                StringBuilder rsp = new StringBuilder();
-                                for (int i = 0; i < 4; i++) {
-                                    rsp.append((char) newConnection.getInData().getByte());
-                                }
-                                if (rsp.toString().equals("OK\n\n")) {
-                                    File newFile = new File(directory + "\\" + fileName);
-                                    OutputStream out = new FileOutputStream(newFile);
-                                    InputStream in = newConnection.getClientSocket().getInputStream();
-                                    byte[] buffer = new byte[1024];
-                                    int read;
-                                    while ((read = in.read(buffer)) != -1) {
-                                        out.write(buffer, 0, read);
-                                    }
-                                    out.close();
-                                    in.close();
-                                } else {
-                                    InputStream in = newConnection.getClientSocket().getInputStream();
-                                    int read;
-                                    while ((read = in.read()) != -1) {
-                                        rsp.append((char) read);
-                                    }
-                                    System.out.println(rsp);
-                                }
-                            } catch (Exception e) {
-                                System.err.println(e.getMessage());
-                                log.warning(e.getMessage());
+            @Override
+            public void search(final String search, final byte[] id) {
+                try {
+                    if(channelSet.size() < posi.getNGHBRS()){
+                        for(AsynchronousSocketChannel channel : posi.getChannelSet()){
+                            if(!channelSet.contains(channel)){
+                                channelSet.add(channel);
+                                new ListenerAIO(channel, log, downloadPort, directory,cache,searchMap,searchResultsListener);
                             }
+                        }
+                    }
+                    byte[] sourceAddress = {0,0,0,0,0};
+                    byte[] destinationAddress = {0,0,0,0,0};
+                    Search srch = new Search(id, 1, RoutingService.BREADTHFIRSTBROADCAST,
+                            sourceAddress, destinationAddress, search);
+                    searchMap.put(Arrays.toString(srch.getID()), search);
+                    for (AsynchronousSocketChannel channel : channelSet) {
+                        if (channel.isOpen()) {
+                            new SenderAIO(channel,srch,log);
                         } else {
-                            System.out.println("File already exists in directory");
+                            channelSet.remove(channel);
                         }
-                        */
-                    } else {
-                        System.out.println("Invalid download format: download " +
-                                "<download Node> <download port> <File ID> " +
-                                "<File Name>");
                     }
-                    break;
-                default:
-                    try {
-                        byte[] sourceAddress = {0,0,0,0,0};
-                        byte[] destinationAddress = {0,0,0,0,0};
-                        Search srch = new Search(Utilities.randomID(), 1, RoutingService.BREADTHFIRSTBROADCAST,
-                                sourceAddress, destinationAddress, command);
-                        searchMap.put(Arrays.toString(srch.getID()), command);
-                        System.out.println("Searching for: " + command);
-                        for (AsynchronousSocketChannel channel : channelSet) {
-                            if (channel.isOpen()) {
-                                new SenderAIO(channel,srch,log);
-                            } else {
-                                channelSet.remove(channel);
-                            }
-                        }
-                    } catch (BadAttributeValueException e) {
-                        log.warning(e.getMessage());
-                    }
-                    break;
-            }
-        }
-
-
-
-
-        //System.exit(0);
-    }
-
-    public AsynchronousSocketChannel initiateConnection(InetSocketAddress addr) throws IOException {
-            AsynchronousSocketChannel clientChannel = AsynchronousSocketChannel.open();
-            clientChannel.connect(addr, null, new CompletionHandler<Void, Void>() {
-                @Override
-                public void completed(Void a, Void b) {
-                    try {
-                        handleConnect(clientChannel);
-                    } catch (IOException e) {
-                        failed(e, null);
-                    }
-
-                }
-
-                @Override
-                public void failed(Throwable e, Void attachment) {
-                    try {
-                        clientChannel.close();
-                    } catch (IOException e1) {
-                        log.warning(e1.getMessage());
-                    }
-                    System.out.println("Failed to Connect");
-                }
-            });
-
-        return clientChannel;
-    }
-
-    public void handleConnect(AsynchronousSocketChannel clientChannel) throws IOException{
-        ByteBuffer buf = ByteBuffer.wrap("INIT SharOn/1.0\n\n".getBytes());
-        clientChannel.write(buf, buf, new CompletionHandler<Integer, ByteBuffer>() {
-            @Override
-            public void completed(Integer bytesWritten, ByteBuffer buf) {
-                try {
-                    handleHandshake(clientChannel);
+                } catch (BadAttributeValueException e) {
+                    log.warning(e.getMessage());
                 } catch (IOException e) {
-                    System.err.println(e.getMessage());
-                }
-            }
-
-            @Override
-            public void failed(Throwable exc, ByteBuffer buf) {
-                try {
-                    clientChannel.close();
-                } catch (IOException e) {
-                    log.log(Level.WARNING, "Close Failed", e);
-                }
-            }
-        });
-
-    }
-
-    public void handleHandshake(AsynchronousSocketChannel clntChannel) throws IOException{
-        ByteBuffer buf = ByteBuffer.allocateDirect(100);
-        clntChannel.read(buf, buf, new CompletionHandler<Integer, ByteBuffer>() {
-            @Override
-            public void completed(Integer bytesRead, ByteBuffer buf) {
-                try{
-                    handleHandshakeRsp(clntChannel, buf, bytesRead);
-                }catch (IOException e){
-                    failed(e,null);
-                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
 
             @Override
-            public void failed(Throwable exc, ByteBuffer attachment) {
+            public void download(final long fileID, final InetSocketAddress downloadHost, final  String name) {
                 try {
-                    clntChannel.close();
+                    new Download(directory,log).startDownload(downloadHost.getHostName(),downloadHost.getPort(),Long.toString(fileID),name);
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "Close Failed", e);
+                    e.printStackTrace();
                 }
             }
-        });
-    }
 
-    public void handleHandshakeRsp(AsynchronousSocketChannel clientChannel,
-                                          ByteBuffer buf, Integer bytesRead) throws IOException, InterruptedException {
-        for(int i = 0; i < bytesRead; i++ ){
-            cache.add(buf.get(i));
-        }
-        if(cache.size() >= ("OK SharOn\n\n".getBytes().length)) {
-            byte[] bytes = new byte[cache.size()];
-            for (int i = 0; i < cache.size(); i++) {
-                bytes[i] = cache.get(i);
+            @Override
+            public byte[] getSearchID(final String srch) {
+                return Utilities.randomID();
             }
-            String rsp = frameHandshake(ByteBuffer.wrap(bytes));
-            if (rsp.equals("OK SharOn\n\n")) {
-                log.info("Connected " + clientChannel.getRemoteAddress());
-                System.out.println("Connected to " + clientChannel.getRemoteAddress());
-                channelSetLock.acquire();
-                channelSet.add(clientChannel);
-                new ListenerAIO(clientChannel, log, downloadPort, directory,cache);
-                channelSetLock.release();
-            }
-            else {
-                System.out.println("Handshake rejected " + clientChannel.getRemoteAddress());
-                clientChannel.close();
-                throw new IOException("Handshake was rejected " + clientChannel.getRemoteAddress());
-            }
-        }else{
-            handleHandshake(clientChannel);
-        }
+        };
+        if(!none) {
+            //Set SharOn listener in GUI
+            gui.setSharOnListener(sharOnListener);
+            // Thread-safe GUI execution
+            javax.swing.SwingUtilities.invokeLater(gui);
 
-    }
+            Boolean exitFlag = false;
+            while (!exitFlag) {
+                System.out.println("Enter a Command");
+                Scanner reader = new Scanner(System.in);  // Reading from System.in
+                String getLine = reader.nextLine();
+                String command = "";
+                StringTokenizer commandTokenizer = new StringTokenizer(getLine);
 
-    public String frameHandshake(ByteBuffer buffer){
-        cache.clear();
-        String  handshake = "";
-        for(int i = 0; i < "OK SharOn\n\n".getBytes().length; i++){
-            handshake += (char)buffer.get();
+                if (!getLine.equals("")) {
+                    command = commandTokenizer.nextToken();
+                }
+
+                switch (command) {
+                    case "exit":
+                        exitFlag = true;
+                        break;
+                    case "connect":
+                        if (commandTokenizer.countTokens() >= 2) {
+                            InetSocketAddress address = new InetSocketAddress(commandTokenizer.nextToken(),
+                                    Integer.parseInt(commandTokenizer.nextToken()));
+                            try {
+                                ConnectionAIO newCon = new ConnectionAIO(log);
+                                if (newCon.initiateConnection(address)) {
+                                    channelSet.add(newCon.getClientChannel());
+                                    new ListenerAIO(newCon.getClientChannel(), log, downloadPort, directory, cache,
+                                            searchMap, searchResultsListener);
+                                }
+                            } catch (IOException e) {
+                                log.warning(e.getMessage());
+                            }
+                        } else {
+                            System.out.println("Invalid connect format connect " +
+                                    "<connector Node> <connector port>");
+                        }
+                        break;
+                    case "download":
+                        if (commandTokenizer.countTokens() == 4) {
+                            String outDownloadName = commandTokenizer.nextToken();
+                            int outDownloadPort = Integer.parseInt(commandTokenizer.nextToken());
+                            String fileID = commandTokenizer.nextToken();
+                            String fileName = commandTokenizer.nextToken();
+                            new Download(directory, log).startDownload(outDownloadName, outDownloadPort, fileID, fileName);
+                        } else {
+                            System.out.println("Invalid download format: download " +
+                                    "<download Node> <download port> <File ID> " +
+                                    "<File Name>");
+                        }
+                        break;
+                    default:
+                        try {
+                            if (channelSet.size() < posi.getNGHBRS()) {
+                                for (AsynchronousSocketChannel channel : posi.getChannelSet()) {
+                                    if (!channelSet.contains(channel)) {
+                                        channelSet.add(channel);
+                                        new ListenerAIO(channel, log, downloadPort, directory, cache,
+                                                searchMap, searchResultsListener);
+                                    }
+                                }
+                            }
+                            byte[] sourceAddress = {0, 0, 0, 0, 0};
+                            byte[] destinationAddress = {0, 0, 0, 0, 0};
+                            Search srch = new Search(Utilities.randomID(), 1, RoutingService.BREADTHFIRSTBROADCAST,
+                                    sourceAddress, destinationAddress, command);
+                            searchMap.put(Arrays.toString(srch.getID()), command);
+                            for (AsynchronousSocketChannel channel : channelSet) {
+                                if (channel.isOpen()) {
+                                    new SenderAIO(channel, srch, log);
+                                } else {
+                                    channelSet.remove(channel);
+                                }
+                            }
+                        } catch (BadAttributeValueException e) {
+                            log.warning(e.getMessage());
+                        }
+                        break;
+                }
+            }
         }
-        while(buffer.remaining() > 0){
-            cache.add(buffer.get());
-        }
-        return handshake;
     }
 }
 

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SharOnProtocal.iml" filepath="$PROJECT_DIR$/SharOnProtocal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SharOnProtocol.iml" filepath="$PROJECT_DIR$/SharOnProtocol.iml" />
     </modules>
   </component>
 </project>

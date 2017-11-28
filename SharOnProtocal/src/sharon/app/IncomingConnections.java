@@ -1,4 +1,13 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 7
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package sharon.app;
+
+
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -61,6 +70,5 @@ class IncomingConnections implements Runnable {
             t = new Thread(this);
             t.start();
         }
-
     }
 }

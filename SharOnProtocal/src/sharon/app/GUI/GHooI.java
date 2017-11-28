@@ -60,13 +60,12 @@ public class GHooI extends JPanel implements Runnable {
     
     /**
      * Add node to specified search (by searchID) for download
-     * 
-     * @param filename name of file
+     *  @param filename name of file
      * @param searchID ID of search
      * @param fileID ID of file within search
      * @param downloadHost address/port of download server
      */
-    public void addDownloadNode(final String filename, final byte[] searchID, final int fileID, final InetSocketAddress downloadHost) {
+    public void addDownloadNode(final String filename, final byte[] searchID, final long fileID, final InetSocketAddress downloadHost) {
         treePanel.addDownload(filename, searchID, fileID, downloadHost);
     }
     
@@ -78,7 +77,7 @@ public class GHooI extends JPanel implements Runnable {
     public SearchResultsListener getSearchResultsListener() {
         return new SearchResultsListener() {
             @Override
-            public void foundResult(final String filename, final byte[] searchID, final int fileID, final InetSocketAddress downloadHost) {
+            public void foundResult(final String filename, final byte[] searchID, final long fileID, final InetSocketAddress downloadHost) {
                 addDownloadNode(filename, searchID, fileID, downloadHost);
             }
         };

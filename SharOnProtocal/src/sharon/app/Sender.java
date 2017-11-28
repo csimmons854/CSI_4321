@@ -1,3 +1,10 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 7
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package sharon.app;
 
 import sharon.serialization.Message;

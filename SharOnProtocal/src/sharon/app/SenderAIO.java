@@ -1,3 +1,10 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 7
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package sharon.app;
 
 import sharon.serialization.MessageOutput;
@@ -9,6 +16,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.logging.Logger;
 
+/**
+ * Sends new messages
+ */
 public class SenderAIO {
     private Logger log;
     private Search search;

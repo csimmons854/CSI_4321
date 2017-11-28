@@ -11,11 +11,10 @@ import java.net.InetSocketAddress;
 public interface SearchResultsListener {
     /**
      * Called when a search result is found
-     * 
-     * @param filename search result file name
+     *  @param filename search result file name
      * @param searchID ID of original search
      * @param fileID ID of search result file
      * @param downloadHost Address/Port of search result file
      */
-    void foundResult(String filename, byte[] searchID, int fileID, InetSocketAddress downloadHost);
+    void foundResult(String filename, byte[] searchID, long fileID, InetSocketAddress downloadHost);
 }

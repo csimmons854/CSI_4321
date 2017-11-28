@@ -1,3 +1,10 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 7
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package sharon.app;
 
 import sharon.serialization.MessageInput;
@@ -6,13 +13,7 @@ import sharon.serialization.MessageOutput;
 import java.io.IOException;
 import java.net.Socket;
 
-/************************************************
- *
- * Author: Chris Simmons
- * Assignment: Program0Test
- * Class: CSI 4321 Data Communications
- *
- ************************************************/
+
 
 
 public class Connection {

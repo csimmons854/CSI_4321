@@ -1,6 +1,13 @@
+/************************************************
+ *
+ * Author: Chris Simmons
+ * Assignment: Program 7
+ * Class: CSI 4321 Data Communications
+ *
+ ************************************************/
 package sharon.app;
 
-import mvn.app.Server;
+import sharon.app.GUI.SearchResultsListener;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -8,38 +15,47 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
-
 /**
- * Created by Chris on 11/27/2017.
+ * Waits for incoming connections
  */
 public class IncomingConnectionsAIO {
     private CopyOnWriteArrayList<AsynchronousSocketChannel> channels;
-    private AsynchronousServerSocketChannel serverChannel;
     private Logger log;
     private int downloadPort;
     String directory;
-    private ArrayList<Byte> temp = new ArrayList<>();
+    private HashMap<String,String> searchMap;
+    private ArrayList<Byte> temp = new ArrayList<>();private SearchResultsListener searchResultsListener;
+
 
     public IncomingConnectionsAIO(CopyOnWriteArrayList<AsynchronousSocketChannel> channels,
                                   AsynchronousServerSocketChannel serverChannel,
-                                  Logger log, int downloadPort, String directory) {
+                                  Logger log, int downloadPort, String directory,
+                                  HashMap<String,String> searchMap,
+                                  SearchResultsListener searchResultsListener) {
         this.channels = channels;
-        this.serverChannel = serverChannel;
         this.log = log;
+        this.searchResultsListener = searchResultsListener;
         this.downloadPort = downloadPort;
         this.directory = directory;
+        this.searchMap = searchMap;
         listen(serverChannel);
     }
 
     public void listen(AsynchronousServerSocketChannel serverChannel) {
+        try {
+            System.out.println(serverChannel.getLocalAddress());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         serverChannel.accept(null, new CompletionHandler<AsynchronousSocketChannel, Void>() {
             @Override
             public void completed(AsynchronousSocketChannel clientChannel, Void attachment) {
+
                 serverChannel.accept(null, this);
                 try {
                     read(clientChannel);
@@ -50,7 +66,7 @@ public class IncomingConnectionsAIO {
 
             @Override
             public void failed(Throwable exc, Void attachment) {
-
+                System.err.println("Something went really wrong");
             }
         });
     }
@@ -91,7 +107,7 @@ public class IncomingConnectionsAIO {
             if(rsp.equals("INIT SharOn/1.0\n\n")){
                 clntChan.write(ByteBuffer.wrap("OK SharOn\n\n".getBytes("ASCII")));
                 log.info("Connection Established too: " + clntChan.getRemoteAddress());
-                new ListenerAIO(clntChan,log,downloadPort,directory,temp);
+                new ListenerAIO(clntChan,log,downloadPort,directory,temp,searchMap,searchResultsListener);
                 channels.add(clntChan);
             }else{
                 clntChan.write(ByteBuffer.wrap("REJECT 300 Bad Handshake\n\n".getBytes()));
