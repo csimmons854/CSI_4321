@@ -125,7 +125,6 @@ public class Node{
                     }
                     break;
                 case "download":
-
                     if (commandTokenizer.countTokens() == 4) {
                         String outDownloadName = commandTokenizer.nextToken();
                         int outDownloadPort = Integer.parseInt(commandTokenizer.nextToken());

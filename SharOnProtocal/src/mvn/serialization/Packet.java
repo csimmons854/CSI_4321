@@ -233,7 +233,7 @@ public class Packet {
      * Get list of addresses
      * @return list of addresses
      */
-    public Set getAddrList(){
+    public Set<InetSocketAddress> getAddrList(){
         return new HashSet<>(addrList);
     }
 

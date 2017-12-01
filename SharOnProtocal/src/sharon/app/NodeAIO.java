@@ -1,10 +1,10 @@
-/************************************************
+/*
  *
  * Author: Chris Simmons
  * Assignment: Program 7
  * Class: CSI 4321 Data Communications
  *
- ************************************************/
+*/
 package sharon.app;
 
 import sharon.app.GUI.GHooI;
@@ -19,7 +19,7 @@ import java.net.*;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -34,7 +34,7 @@ public class NodeAIO {
     private int localPort;
     private int downloadPort;
     private static Logger log;
-    private CopyOnWriteArrayList<AsynchronousSocketChannel> channelSet = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<InetSocketAddress,AsynchronousSocketChannel> channelSet = new ConcurrentHashMap<>();
     private ArrayList<Byte> cache = new ArrayList<>();
     static private String directory;
     private POSI posi;
@@ -48,7 +48,7 @@ public class NodeAIO {
      * @param localPort local port of accepting connections
      * @param downloadPort download port for accepting downloads
      */
-    public NodeAIO(InetAddress mavenAddress, int mavenPort, int localPort, int downloadPort) {
+    NodeAIO(InetAddress mavenAddress, int mavenPort, int localPort, int downloadPort) {
         this.mavenAddress = mavenAddress;
         this.mavenPort = mavenPort;
         this.localPort = localPort;
@@ -58,9 +58,9 @@ public class NodeAIO {
 
     /**
      * @param args program arguments
-     * @throws Exception
+     * @throws IOException for bad Input/Output
      */
-    static public void main(String [] args) throws Exception {
+    static public void main(String [] args) throws IOException {
         if ((args.length < 5) ) { // Test for correct # of args
             throw new IllegalArgumentException("Parameter(s): <Maven Address> <Maven Port> <Local Port>" +
             "<Download Port> <Download Directory>");
@@ -82,9 +82,9 @@ public class NodeAIO {
 
     /**
      * Executes NodeAIO
-     * @throws Exception
+     * @throws IOException for bad input/output
      */
-    public void start() throws Exception {
+    public void start() throws IOException {
         log = Logger.getLogger("SharOnProtocol.log");
         FileHandler fh;
         fh = new FileHandler("SharOnProtocol.log");
@@ -101,7 +101,7 @@ public class NodeAIO {
         new IncomingConnectionsAIO(channelSet,serverSocketChannel,log,downloadPort,directory,searchMap,searchResultsListener);
 
         posi = new POSI(localAddress,log,new InetSocketAddress(mavenAddress,mavenPort));
-        posi.start();
+        //posi.start();
         System.out.println("Created POSI");
 
         try {
@@ -112,13 +112,11 @@ public class NodeAIO {
         }catch (IOException e){
             System.err.println(e.getMessage());
         }
-
-        System.out.println("Mavens" + posi.getMavens());
-        System.out.println("Nodes" + posi.getNodes());
-        channelSet.addAll(posi.getChannelSet());
-        for(AsynchronousSocketChannel channel : channelSet){
+        /*channelSet.putAll(posi.getChannelSet());
+        for(AsynchronousSocketChannel channel : channelSet.values()){
             new ListenerAIO(channel, log, downloadPort, directory,cache,searchMap,searchResultsListener);
         }
+        */
 
 
         final GHooI gui = new GHooI();
@@ -132,37 +130,17 @@ public class NodeAIO {
             @Override
             public void search(final String search, final byte[] id) {
                 try {
-                    if(channelSet.size() < posi.getNGHBRS()){
-                        for(AsynchronousSocketChannel channel : posi.getChannelSet()){
-                            if(!channelSet.contains(channel)){
-                                channelSet.add(channel);
-                                new ListenerAIO(channel, log, downloadPort, directory,cache,searchMap,searchResultsListener);
-                            }
-                        }
-                    }
-                    byte[] sourceAddress = {0,0,0,0,0};
-                    byte[] destinationAddress = {0,0,0,0,0};
-                    Search srch = new Search(id, 1, RoutingService.BREADTHFIRSTBROADCAST,
-                            sourceAddress, destinationAddress, search);
-                    searchMap.put(Arrays.toString(srch.getID()), search);
-                    for (AsynchronousSocketChannel channel : channelSet) {
-                        if (channel.isOpen()) {
-                            new SenderAIO(channel,srch,log);
-                        } else {
-                            channelSet.remove(channel);
-                        }
-                    }
-                } catch (BadAttributeValueException e) {
-                    log.warning(e.getMessage());
+                    searchCommand(search,id,searchMap);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.warning(e.getMessage());
                 }
             }
 
             @Override
             public void download(final long fileID, final InetSocketAddress downloadHost, final  String name) {
                 try {
-                    new Download(directory,log).startDownload(downloadHost.getHostName(),downloadHost.getPort(),Long.toString(fileID),name);
+                    new Download(directory,log).startDownload(downloadHost.getHostName(),
+                            downloadHost.getPort(),Long.toString(fileID),name);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -201,11 +179,13 @@ public class NodeAIO {
                                     Integer.parseInt(commandTokenizer.nextToken()));
                             try {
                                 ConnectionAIO newCon = new ConnectionAIO(log);
-                                if (newCon.initiateConnection(address)) {
-                                    channelSet.add(newCon.getClientChannel());
+                                if(!channelSet.containsKey(address)) {
+                                    newCon.initiateConnection(address);
+                                    channelSet.put(address,newCon.getClientChannel());
                                     new ListenerAIO(newCon.getClientChannel(), log, downloadPort, directory, cache,
                                             searchMap, searchResultsListener);
                                 }
+
                             } catch (IOException e) {
                                 log.warning(e.getMessage());
                             }
@@ -216,11 +196,21 @@ public class NodeAIO {
                         break;
                     case "download":
                         if (commandTokenizer.countTokens() == 4) {
-                            String outDownloadName = commandTokenizer.nextToken();
-                            int outDownloadPort = Integer.parseInt(commandTokenizer.nextToken());
-                            String fileID = commandTokenizer.nextToken();
-                            String fileName = commandTokenizer.nextToken();
-                            new Download(directory, log).startDownload(outDownloadName, outDownloadPort, fileID, fileName);
+                            String outDownloadName;
+                            String fileID;
+                            String fileName;
+                            int outDownloadPort;
+                            try {
+                                outDownloadName = commandTokenizer.nextToken();
+                                outDownloadPort = Integer.parseInt(commandTokenizer.nextToken());
+                                fileID = commandTokenizer.nextToken();
+                                fileName = commandTokenizer.nextToken();
+                                new Download(directory, log).startDownload(outDownloadName,
+                                        outDownloadPort, fileID, fileName);
+                            }catch (NumberFormatException e){
+                                System.out.println("Invalid format for download port, " +
+                                        "port must be an integer < 65535 ");
+                            }
                         } else {
                             System.out.println("Invalid download format: download " +
                                     "<download Node> <download port> <File ID> " +
@@ -228,35 +218,42 @@ public class NodeAIO {
                         }
                         break;
                     default:
-                        try {
-                            if (channelSet.size() < posi.getNGHBRS()) {
-                                for (AsynchronousSocketChannel channel : posi.getChannelSet()) {
-                                    if (!channelSet.contains(channel)) {
-                                        channelSet.add(channel);
-                                        new ListenerAIO(channel, log, downloadPort, directory, cache,
-                                                searchMap, searchResultsListener);
-                                    }
-                                }
-                            }
-                            byte[] sourceAddress = {0, 0, 0, 0, 0};
-                            byte[] destinationAddress = {0, 0, 0, 0, 0};
-                            Search srch = new Search(Utilities.randomID(), 1, RoutingService.BREADTHFIRSTBROADCAST,
-                                    sourceAddress, destinationAddress, command);
-                            searchMap.put(Arrays.toString(srch.getID()), command);
-                            for (AsynchronousSocketChannel channel : channelSet) {
-                                if (channel.isOpen()) {
-                                    new SenderAIO(channel, srch, log);
-                                } else {
-                                    channelSet.remove(channel);
-                                }
-                            }
-                        } catch (BadAttributeValueException e) {
-                            log.warning(e.getMessage());
-                        }
+                        searchCommand(command,Utilities.randomID(),searchMap);
                         break;
                 }
             }
         }
+    }
+
+    public void searchCommand(String searchStr, byte [] id, HashMap<String, String> searchMap) throws IOException {
+        System.out.println("Searching for \"" + searchStr + "\"");
+        try {
+            if (channelSet.size() < posi.getNGHBRS()) {
+                for (AsynchronousSocketChannel channel : posi.getChannelSet().values()) {
+                    if (!channelSet.contains(channel)) {
+                        channelSet.put((InetSocketAddress) channel.getRemoteAddress(),channel);
+                        new ListenerAIO(channel, log, downloadPort, directory, cache,
+                                searchMap, searchResultsListener);
+                    }
+                }
+            }
+            byte[] sourceAddress = {0, 0, 0, 0, 0};
+            byte[] destinationAddress = {0, 0, 0, 0, 0};
+            Search srch = new Search(id, 1, RoutingService.BREADTHFIRSTBROADCAST,
+                    sourceAddress, destinationAddress, searchStr);
+            searchMap.put(Arrays.toString(srch.getID()), searchStr);
+            for (AsynchronousSocketChannel channel : channelSet.values()) {
+                InetSocketAddress address = (InetSocketAddress)channel.getRemoteAddress();
+                if (channel.isOpen()) {
+                    new SenderAIO(channel, srch, log);
+                } else {
+                    channelSet.remove(address,channel);
+                }
+            }
+        } catch (BadAttributeValueException e) {
+            log.warning(e.getMessage());
+        }
+
     }
 }
 

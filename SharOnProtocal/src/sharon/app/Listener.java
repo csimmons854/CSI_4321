@@ -17,8 +17,6 @@ import java.util.logging.Logger;
 import static sharon.serialization.Message.decode;
 
 class Listener implements Runnable {
-    private final byte [] srcAddress = {(byte) 0x00, (byte) 0x00, (byte) 0x00,(byte) 0x00, (byte) 0x00};
-    private final byte [] destAddress = {(byte) 0x00, (byte) 0x00, (byte) 0x00,(byte) 0x00, (byte) 0x00};
     private Thread t;
     private Message msg;
     private MessageInput inData;
